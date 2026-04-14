@@ -1,10 +1,33 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { TestimonialCard } from '@/components/TestimonialCard'
 import { testimonials } from '@/data/testimonials'
+import { CaseCard } from '@/components/CaseCard'
+import { cases } from '@/data/cases'
+import { Search, Layers } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export default function Index() {
   const gridRef = useRef<HTMLDivElement>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [segmentFilter, setSegmentFilter] = useState('Todos')
+
+  const filteredCases = useMemo(() => {
+    return cases.filter((c) => {
+      const matchesSearch =
+        c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.description.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesSegment = segmentFilter === 'Todos' || c.segment === segmentFilter
+      return matchesSearch && matchesSegment
+    })
+  }, [searchQuery, segmentFilter])
 
   // Simple staggered fade-in animation using Intersection Observer
   useEffect(() => {
@@ -26,12 +49,14 @@ export default function Index() {
       Array.from(children).forEach((child, index) => {
         // Add staggered delay
         ;(child as HTMLElement).style.animationDelay = `${(index % 6) * 100}ms`
+        child.classList.add('opacity-0', 'translate-y-4')
+        child.classList.remove('animate-fade-in-up')
         observer.observe(child)
       })
     }
 
     return () => observer.disconnect()
-  }, [])
+  }, [filteredCases])
 
   // Create two columns of testimonials for the scrolling hero
   const heroScrollingCards = testimonials.slice(0, 10)
@@ -80,33 +105,71 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Testimonials Grid Section */}
+      {/* Cases Grid Section */}
       <section className="bg-[#F6F7F9]/30 py-20 lg:py-32" id="cases">
         <div className="container mx-auto px-4 max-w-[1350px]">
-          <div className="mb-16 text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl font-semibold text-[#0B0D12] mb-4">
-              A comunidade que mais cresce
-            </h2>
-            <p className="text-[#5F6368] text-lg">
-              Conheça as histórias reais de quem já implementou nossas soluções e mudou o patamar de
-              seus resultados.
-            </p>
+          {/* Search and Filter Bar */}
+          <div className="bg-white border border-[#E6E8EB] rounded-2xl p-4 md:p-6 shadow-sm mb-12 max-w-[1350px] mx-auto animate-fade-in-up">
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#5F6368]" />
+                <Input
+                  placeholder="Buscar caso..."
+                  className="pl-10 h-12 text-base border-[#E6E8EB] focus-visible:ring-[#02162A] rounded-lg"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="w-full md:w-64 shrink-0">
+                <Select value={segmentFilter} onValueChange={setSegmentFilter}>
+                  <SelectTrigger className="h-12 border-[#E6E8EB] focus:ring-[#02162A] rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Layers className="h-4 w-4 text-[#5F6368]" />
+                      <SelectValue placeholder="Segmento" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Todos">Todos os Segmentos</SelectItem>
+                    <SelectItem value="Marketing">Marketing</SelectItem>
+                    <SelectItem value="Tecnologia">Tecnologia</SelectItem>
+                    <SelectItem value="Varejo">Varejo</SelectItem>
+                    <SelectItem value="RH">RH</SelectItem>
+                    <SelectItem value="Imobiliário">Imobiliário</SelectItem>
+                    <SelectItem value="Jurídico">Jurídico</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-[#E6E8EB]">
+              <p className="text-sm text-[#5F6368]">
+                Mostrando{' '}
+                <span className="font-semibold text-[#0B0D12]">{filteredCases.length}</span> de{' '}
+                <span className="font-semibold text-[#0B0D12]">{cases.length}</span> casos
+              </p>
+            </div>
           </div>
 
           <div
             ref={gridRef}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
           >
-            {testimonials.map((testimonial) => (
+            {filteredCases.map((caseItem) => (
               <div
-                key={testimonial.id}
+                key={caseItem.id}
                 className="opacity-0 translate-y-4 transition-all duration-500 ease-out"
                 style={{ willChange: 'opacity, transform' }}
               >
-                <TestimonialCard testimonial={testimonial} className="h-full" />
+                <CaseCard caseItem={caseItem} />
               </div>
             ))}
           </div>
+
+          {filteredCases.length === 0 && (
+            <div className="text-center py-20 text-[#5F6368] animate-fade-in">
+              <p className="text-lg">Nenhum caso encontrado para os filtros selecionados.</p>
+            </div>
+          )}
         </div>
       </section>
     </div>

@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { Menu, BrainCircuit } from 'lucide-react'
+import { Menu, BrainCircuit, Mail, MapPin, Instagram, Linkedin, Youtube } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV_LINKS = [
@@ -131,10 +131,121 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      {/* Simple Footer just to complete the layout visually */}
-      <footer className="border-t border-[#E6E8EB] py-8 mt-20">
-        <div className="container mx-auto px-4 text-center text-sm text-[#5F6368]">
-          © {new Date().getFullYear()} Viver de IA. Todos os direitos reservados.
+      {/* Site Footer */}
+      <footer className="bg-[#0A0C10] pt-16 pb-8 mt-20 border-t border-[#1F2937]">
+        <div className="container mx-auto px-4 max-w-[1350px]">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+            <div className="md:col-span-1">
+              <div className="flex items-center gap-3 mb-6">
+                <BrainCircuit className="h-8 w-8 text-white" />
+                <span className="text-xl font-semibold tracking-[0.2em] text-white">
+                  VIVER DE IA
+                </span>
+              </div>
+              <p className="text-sm leading-relaxed text-[#9CA3AF]">
+                A plataforma de soluções e educação de IA da sua empresa. Plug & Play para
+                implementar soluções de Inteligência Artificial na sua empresa de forma simples e
+                imediata.
+              </p>
+            </div>
+
+            <div className="md:ml-auto">
+              <h4 className="text-white font-semibold mb-6">Menu</h4>
+              <ul className="space-y-4 text-sm text-[#9CA3AF]">
+                <li>
+                  <Link
+                    to="/"
+                    onClick={(e) => handleScroll(e, '/')}
+                    className="hover:text-white transition-colors"
+                  >
+                    Lar
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="#solucoes"
+                    onClick={(e) => handleScroll(e, '#solucoes')}
+                    className="hover:text-white transition-colors"
+                  >
+                    Soluções
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="#blog"
+                    onClick={(e) => handleScroll(e, '#blog')}
+                    className="hover:text-white transition-colors"
+                  >
+                    por
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-semibold mb-6">Contato</h4>
+              <ul className="space-y-4 text-sm text-[#9CA3AF]">
+                <li className="flex items-center gap-3">
+                  <Mail className="h-5 w-5 shrink-0" />
+                  <a
+                    href="mailto:contato@vivedeia.ai"
+                    className="hover:text-white transition-colors"
+                  >
+                    contato@vivedeia.ai
+                  </a>
+                </li>
+                <li className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 shrink-0 mt-0.5" />
+                  <span>SC-401, Florianópolis, SC</span>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-semibold mb-6">Redes Sociais</h4>
+              <ul className="space-y-4 text-sm text-[#9CA3AF]">
+                <li>
+                  <a
+                    href="#"
+                    className="flex items-center gap-3 hover:text-white transition-colors"
+                  >
+                    <Instagram className="h-5 w-5 shrink-0" />
+                    <span>Instagram</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="flex items-center gap-3 hover:text-white transition-colors"
+                  >
+                    <Linkedin className="h-5 w-5 shrink-0" />
+                    <span>LinkedIn</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="flex items-center gap-3 hover:text-white transition-colors"
+                  >
+                    <Youtube className="h-5 w-5 shrink-0" />
+                    <span>YouTube</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[#9CA3AF]">
+            <p>© 2026 Viver de IA. Todos os direitos reservados.</p>
+            <div className="flex items-center gap-6">
+              <a href="#" className="hover:text-white transition-colors">
+                Política de Privacidade
+              </a>
+              <a href="#" className="hover:text-white transition-colors">
+                Termos de Uso
+              </a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
