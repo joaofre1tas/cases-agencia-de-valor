@@ -158,13 +158,13 @@ export default function Layout() {
                     onClick={(e) => handleScroll(e, '/')}
                     className="hover:text-white transition-colors"
                   >
-                    Lar
+                    Home
                   </Link>
                 </li>
                 <li>
                   <Link
-                    to="#solucoes"
-                    onClick={(e) => handleScroll(e, '#solucoes')}
+                    to="/#solucoes"
+                    onClick={(e) => handleScroll(e, '/#solucoes')}
                     className="hover:text-white transition-colors"
                   >
                     Soluções
@@ -172,11 +172,11 @@ export default function Layout() {
                 </li>
                 <li>
                   <Link
-                    to="#blog"
-                    onClick={(e) => handleScroll(e, '#blog')}
+                    to="/#planos"
+                    onClick={(e) => handleScroll(e, '/#planos')}
                     className="hover:text-white transition-colors"
                   >
-                    por
+                    Planos
                   </Link>
                 </li>
               </ul>
@@ -188,10 +188,10 @@ export default function Layout() {
                 <li className="flex items-center gap-3">
                   <Mail className="h-5 w-5 shrink-0" />
                   <a
-                    href="mailto:contato@vivedeia.ai"
+                    href="mailto:contato@viverdeia.ai"
                     className="hover:text-white transition-colors"
                   >
-                    contato@vivedeia.ai
+                    contato@viverdeia.ai
                   </a>
                 </li>
                 <li className="flex items-start gap-3">

@@ -6,6 +6,7 @@ import { CaseCard } from '@/components/CaseCard'
 import { cases } from '@/data/cases'
 import { Search, Layers } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Link } from 'react-router-dom'
 import {
   Select,
   SelectContent,
@@ -155,13 +156,14 @@ export default function Index() {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
           >
             {filteredCases.map((caseItem) => (
-              <div
+              <Link
+                to={`/cases/${caseItem.id}`}
                 key={caseItem.id}
-                className="opacity-0 translate-y-4 transition-all duration-500 ease-out"
+                className="opacity-0 translate-y-4 transition-all duration-500 ease-out block hover:no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#02162A] rounded-2xl"
                 style={{ willChange: 'opacity, transform' }}
               >
                 <CaseCard caseItem={caseItem} />
-              </div>
+              </Link>
             ))}
           </div>
 
