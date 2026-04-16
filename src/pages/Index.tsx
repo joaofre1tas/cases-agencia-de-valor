@@ -119,9 +119,9 @@ export default function Index() {
               </div>
             </div>
 
-            {/* Fotos rolando (desktop) */}
-            <div className="hidden lg:block relative h-[620px] mask-image-horizontal overflow-hidden">
-              <div className="absolute inset-y-0 left-0 flex items-center gap-6 animate-marquee-left w-max">
+            {/* Fotos rolando */}
+            <div className="relative h-[380px] lg:h-[620px] mask-image-horizontal overflow-hidden -mx-4 lg:mx-0">
+              <div className="absolute inset-y-0 left-0 flex items-center gap-4 lg:gap-6 animate-marquee-left w-max">
                 {clientPhotos.map((src, index) => (
                   <img
                     key={`hero-orig-${index}`}
@@ -129,7 +129,7 @@ export default function Index() {
                     alt={`Cliente da Agência de Valor recebendo placa de faturamento ${index + 1}`}
                     loading="eager"
                     decoding="async"
-                    className="h-[560px] w-auto rounded-xl object-cover shadow-elevation select-none shrink-0"
+                    className="h-[340px] lg:h-[560px] w-auto rounded-xl object-cover shadow-elevation select-none shrink-0"
                     draggable={false}
                   />
                 ))}
@@ -141,7 +141,7 @@ export default function Index() {
                     aria-hidden="true"
                     loading="lazy"
                     decoding="async"
-                    className="h-[560px] w-auto rounded-xl object-cover shadow-elevation select-none shrink-0"
+                    className="h-[340px] lg:h-[560px] w-auto rounded-xl object-cover shadow-elevation select-none shrink-0"
                     draggable={false}
                   />
                 ))}

@@ -112,7 +112,7 @@ export default {
       },
       animation: {
         'marquee-up': 'marquee-up 35s linear infinite',
-        'marquee-left': 'marquee-left 40s linear infinite',
+        'marquee-left': 'marquee-left 60s linear infinite',
       },
     },
   },
