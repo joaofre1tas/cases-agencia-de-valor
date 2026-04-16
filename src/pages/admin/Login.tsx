@@ -1,17 +1,35 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Logo } from '@/components/Logo'
-import { signIn, isAdmin } from '@/lib/auth'
+import { signIn, isAdmin, useAuth, useIsAdmin } from '@/lib/auth'
 
 export default function AdminLogin() {
   const navigate = useNavigate()
   const location = useLocation()
+  const sessionQuery = useAuth()
+  const isAdminQuery = useIsAdmin(Boolean(sessionQuery.data))
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const checkingSession =
+    sessionQuery.isLoading || (Boolean(sessionQuery.data) && isAdminQuery.isLoading)
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen bg-av-bg text-av-text flex items-center justify-center px-4">
+        <p className="text-av-text-muted">Verificando sessão...</p>
+      </div>
+    )
+  }
+
+  if (sessionQuery.data && isAdminQuery.data) {
+    const from = (location.state as { from?: string } | undefined)?.from ?? '/admin'
+    return <Navigate to={from} replace />
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()

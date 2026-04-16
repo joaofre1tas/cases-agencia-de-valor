@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/toaster'
@@ -7,14 +8,23 @@ import Index from './pages/Index'
 import NotFound from './pages/NotFound'
 import Layout from './components/Layout'
 import CaseStudy from './pages/CaseStudy'
-import AdminLogin from '@/pages/admin/Login'
-import AdminDashboard from '@/pages/admin/Dashboard'
-import AdminNewCase from '@/pages/admin/NewCase'
-import AdminEditCase from '@/pages/admin/EditCase'
-import AdminGuard from '@/components/admin/AdminGuard'
-import AdminLayout from '@/components/admin/AdminLayout'
+
+const AdminLogin = lazy(() => import('@/pages/admin/Login'))
+const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'))
+const AdminNewCase = lazy(() => import('@/pages/admin/NewCase'))
+const AdminEditCase = lazy(() => import('@/pages/admin/EditCase'))
+const AdminGuard = lazy(() => import('@/components/admin/AdminGuard'))
+const AdminLayout = lazy(() => import('@/components/admin/AdminLayout'))
 
 const queryClient = new QueryClient()
+
+function AdminFallback() {
+  return (
+    <div className="min-h-screen bg-av-bg text-av-text flex items-center justify-center px-4">
+      <p className="text-av-text-muted">Carregando área administrativa...</p>
+    </div>
+  )
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -28,12 +38,52 @@ const App = () => (
             <Route path="/cases/:slug" element={<CaseStudy />} />
           </Route>
 
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route element={<AdminGuard />}>
-            <Route element={<AdminLayout />}>
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/cases/new" element={<AdminNewCase />} />
-              <Route path="/admin/cases/:id" element={<AdminEditCase />} />
+          <Route
+            path="/admin/login"
+            element={
+              <Suspense fallback={<AdminFallback />}>
+                <AdminLogin />
+              </Suspense>
+            }
+          />
+          <Route
+            element={
+              <Suspense fallback={<AdminFallback />}>
+                <AdminGuard />
+              </Suspense>
+            }
+          >
+            <Route
+              element={
+                <Suspense fallback={<AdminFallback />}>
+                  <AdminLayout />
+                </Suspense>
+              }
+            >
+              <Route
+                path="/admin"
+                element={
+                  <Suspense fallback={<AdminFallback />}>
+                    <AdminDashboard />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/admin/cases/new"
+                element={
+                  <Suspense fallback={<AdminFallback />}>
+                    <AdminNewCase />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/admin/cases/:id"
+                element={
+                  <Suspense fallback={<AdminFallback />}>
+                    <AdminEditCase />
+                  </Suspense>
+                }
+              />
             </Route>
           </Route>
 
