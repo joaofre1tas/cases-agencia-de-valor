@@ -1,7 +1,6 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link, Outlet } from 'react-router-dom'
-import { ButtonAV } from '@/components/ui/button'
-import { Mail, MapPin, Instagram, Linkedin, Youtube } from 'lucide-react'
+import { ArrowRight, Mail, MapPin, Instagram, Linkedin, Youtube } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { flatRecordToFormValues, mergeSiteSettingsRows, useSiteSettings } from '@/lib/site-settings'
 import { sanitizeRichHtml } from '@/lib/markdown'
@@ -82,9 +81,15 @@ export default function Layout() {
             <Logo variant="full" className="h-8 w-auto" />
           </Link>
 
-          <ButtonAV asChild>
-            <a href={header.cta_url}>{header.cta_label}</a>
-          </ButtonAV>
+          <a
+            href={header.cta_url}
+            className="btn-av shrink-0 max-w-max"
+          >
+            <span>{header.cta_label}</span>
+            <span className="btn-av-icon" aria-hidden>
+              <ArrowRight className="h-4 w-4" />
+            </span>
+          </a>
         </div>
       </header>
 
