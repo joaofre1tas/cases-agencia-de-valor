@@ -217,8 +217,32 @@
   }
 
   .mask-image-horizontal {
-    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(0, 0, 0, 0.15) 4%,
+      rgba(0, 0, 0, 0.45) 10%,
+      rgba(0, 0, 0, 0.8) 16%,
+      black 24%,
+      black 76%,
+      rgba(0, 0, 0, 0.8) 84%,
+      rgba(0, 0, 0, 0.45) 90%,
+      rgba(0, 0, 0, 0.15) 96%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(0, 0, 0, 0.15) 4%,
+      rgba(0, 0, 0, 0.45) 10%,
+      rgba(0, 0, 0, 0.8) 16%,
+      black 24%,
+      black 76%,
+      rgba(0, 0, 0, 0.8) 84%,
+      rgba(0, 0, 0, 0.45) 90%,
+      rgba(0, 0, 0, 0.15) 96%,
+      transparent 100%
+    );
   }
 
   @keyframes fade-in-up {
