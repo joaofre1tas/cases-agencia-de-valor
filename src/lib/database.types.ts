@@ -23,19 +23,40 @@ export interface Database {
           id: string
           email: string
           name: string | null
+          role: 'admin' | 'super_admin'
           created_at: string
         }
         Insert: {
           id: string
           email: string
           name?: string | null
+          role?: 'admin' | 'super_admin'
           created_at?: string
         }
         Update: {
           id?: string
           email?: string
           name?: string | null
+          role?: 'admin' | 'super_admin'
           created_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          key: string
+          value: Json
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          value: Json
+          updated_at?: string
+        }
+        Update: {
+          key?: string
+          value?: Json
+          updated_at?: string
         }
         Relationships: []
       }
@@ -178,6 +199,10 @@ export interface Database {
     Views: Record<string, never>
     Functions: {
       is_admin: {
+        Args: Record<string, never>
+        Returns: boolean
+      }
+      is_super_admin: {
         Args: Record<string, never>
         Returns: boolean
       }

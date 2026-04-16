@@ -16,6 +16,8 @@ const AdminNewCase = lazy(() => import('@/pages/admin/NewCase'))
 const AdminEditCase = lazy(() => import('@/pages/admin/EditCase'))
 const AdminGuard = lazy(() => import('@/components/admin/AdminGuard'))
 const AdminLayout = lazy(() => import('@/components/admin/AdminLayout'))
+const SuperAdminGuard = lazy(() => import('@/components/admin/SuperAdminGuard'))
+const EditorHome = lazy(() => import('@/pages/admin/EditorHome'))
 
 const queryClient = new QueryClient()
 
@@ -91,6 +93,22 @@ const App = () => (
                   </Suspense>
                 }
               />
+              <Route
+                element={
+                  <Suspense fallback={<AdminFallback />}>
+                    <SuperAdminGuard />
+                  </Suspense>
+                }
+              >
+                <Route
+                  path="/admin/editor-home"
+                  element={
+                    <Suspense fallback={<AdminFallback />}>
+                      <EditorHome />
+                    </Suspense>
+                  }
+                />
+              </Route>
               <Route path="/admin/cases/new" element={<Navigate to="/admin/novo-case" replace />} />
               <Route path="/admin/cases/:id" element={<LegacyEditCaseRedirect />} />
               <Route path="/admin/*" element={<Navigate to="/admin" replace />} />

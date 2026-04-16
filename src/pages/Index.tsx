@@ -13,6 +13,15 @@ import {
 } from '@/components/ui/select'
 import { listCases } from '@/lib/cases'
 import { listSegments } from '@/lib/segments'
+import { flatRecordToFormValues, mergeSiteSettingsRows, useSiteSettings } from '@/lib/site-settings'
+import { sanitizeRichHtml } from '@/lib/markdown'
+import {
+  responsiveAlignClasses,
+  responsiveFlexColItemsClasses,
+  responsiveFlexWrapJustifyClasses,
+  responsiveFontClasses,
+} from '@/lib/responsive-site-ui'
+import { cn } from '@/lib/utils'
 
 export default function Index() {
   const gridRef = useRef<HTMLDivElement>(null)
@@ -26,7 +35,14 @@ export default function Index() {
     queryKey: ['segments'],
     queryFn: listSegments,
   })
+  const siteSettingsQuery = useSiteSettings()
   const cases = useMemo(() => casesQuery.data ?? [], [casesQuery.data])
+
+  const { hero, cases: casesSection } = useMemo(() => {
+    const map = siteSettingsQuery.data ?? mergeSiteSettingsRows([])
+    const full = flatRecordToFormValues(map)
+    return { hero: full.home.hero, cases: full.home.cases }
+  }, [siteSettingsQuery.data])
 
   const filteredCases = useMemo(() => {
     return cases.filter((c) => {
@@ -101,21 +117,38 @@ export default function Index() {
         <div className="container mx-auto px-4 max-w-[1350px] relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center min-h-[500px] lg:min-h-[620px] py-16 lg:py-0">
             {/* Texto */}
-            <div className="flex flex-col items-start gap-6 max-w-xl z-10 animate-fade-in-up">
-              <span className="eyebrow-av">Cases · Agência de Valor</span>
-              <h1 className="text-[40px] md:text-[60px] font-semibold tracking-tight text-av-text leading-[1.05]">
-                Agências reais faturando{' '}
-                <span className="text-gradient-av">R$100k+</span> todo mês.
-              </h1>
-              <p className="text-[18px] md:text-[20px] text-av-text-secondary leading-[1.6]">
-                Mais de <span className="text-gradient-av font-semibold">R$126 milhões</span> em
-                resultados gerados. Aqui estão os cases reais de donos que estruturaram o negócio
-                dentro da Mentoria Agência de Valor.
-              </p>
+            <div
+              className={cn(
+                'flex flex-col gap-6 max-w-xl z-10 animate-fade-in-up',
+                responsiveAlignClasses(hero.align),
+                responsiveFlexColItemsClasses(hero.align),
+              )}
+            >
+              <span className="eyebrow-av">{hero.eyebrow}</span>
+              <div
+                className="text-[40px] md:text-[60px] font-semibold tracking-tight text-av-text leading-[1.05]"
+                role="heading"
+                aria-level={1}
+                dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(hero.title_html) }}
+              />
+              <div
+                className="text-[18px] md:text-[20px] text-av-text-secondary leading-[1.6]"
+                dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(hero.subtitle_html) }}
+              />
 
-              <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-av-text-muted">
-                <span className="badge-av">+412 calls individuais</span>
-                <span className="badge-av">100% individual</span>
+              <div
+                className={cn(
+                  'mt-2 flex flex-wrap items-center gap-3 text-xs text-av-text-muted',
+                  responsiveFlexWrapJustifyClasses(hero.align),
+                )}
+              >
+                {hero.badges
+                  .filter((b) => b.enabled !== false && b.label.trim())
+                  .map((b, i) => (
+                    <span key={`${b.label}-${i}`} className="badge-av">
+                      {b.label}
+                    </span>
+                  ))}
               </div>
             </div>
 
@@ -155,11 +188,29 @@ export default function Index() {
       <section className="bg-av-bg py-20 lg:py-28" id="cases">
         <div className="container mx-auto px-4 max-w-[1350px]">
           {/* Cabeçalho da seção */}
-          <div className="mb-10 max-w-2xl">
-            <div className="eyebrow-av mb-3">Todos os cases</div>
-            <h2 className="text-3xl md:text-[40px] font-semibold text-av-text tracking-tight leading-tight">
-              Resultados <span className="text-gradient-av">auditáveis</span>, não promessas.
-            </h2>
+          <div
+            className={cn(
+              'mb-10 max-w-2xl',
+              responsiveAlignClasses(casesSection.align),
+            )}
+          >
+            <div
+              className={cn(
+                'eyebrow-av mb-3 uppercase',
+                responsiveFontClasses(casesSection.typography.eyebrow),
+              )}
+            >
+              {casesSection.eyebrow}
+            </div>
+            <div
+              className={cn(
+                'font-semibold text-av-text tracking-tight leading-tight',
+                responsiveFontClasses(casesSection.typography.title),
+              )}
+              role="heading"
+              aria-level={2}
+              dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(casesSection.title_html) }}
+            />
           </div>
 
           {/* Busca e filtro */}

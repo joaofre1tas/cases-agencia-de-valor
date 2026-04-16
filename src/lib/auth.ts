@@ -33,6 +33,14 @@ export async function isAdmin() {
   return Boolean(data)
 }
 
+export async function isSuperAdmin() {
+  const { data, error } = await supabase.rpc('is_super_admin')
+  if (error) {
+    throw error
+  }
+  return Boolean(data)
+}
+
 export function useAuth() {
   return useQuery<Session | null, AuthError | Error>({
     queryKey: ['auth', 'session'],
@@ -45,6 +53,15 @@ export function useIsAdmin(enabled = true) {
   return useQuery<boolean, AuthError | Error>({
     queryKey: ['auth', 'is-admin'],
     queryFn: isAdmin,
+    enabled,
+    staleTime: 1000 * 30,
+  })
+}
+
+export function useIsSuperAdmin(enabled = true) {
+  return useQuery<boolean, AuthError | Error>({
+    queryKey: ['auth', 'is-super-admin'],
+    queryFn: isSuperAdmin,
     enabled,
     staleTime: 1000 * 30,
   })

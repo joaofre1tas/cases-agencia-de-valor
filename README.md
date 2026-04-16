@@ -40,7 +40,10 @@ Execute no SQL Editor do Supabase, nesta ordem:
 2. `supabase/002_storage.sql`
 3. `supabase/004_add_agency_name.sql`
 4. `supabase/005_segments.sql`
-5. (Opcional) `supabase/003_seed_cases.sql`
+5. `supabase/006_site_settings_and_roles.sql` (papéis `super_admin` + conteúdo da home no `site_settings`)
+6. `supabase/007_site_editor_enhancements.sql` (seção “Todos os cases”, badges do rodapé, colunas do footer, tipografia responsiva, links em nova guia)
+7. `supabase/008_hero_footer_align.sql` (alinhamento do hero e blocos do rodapé por breakpoint)
+8. (Opcional) `supabase/003_seed_cases.sql`
 
 ### Criar usuário admin
 
@@ -54,6 +57,18 @@ values ('<uuid-do-user>', '<email-do-user>', '<nome>');
 ```
 
 Sem essa whitelist, o login autentica mas não libera `/admin`.
+
+### Super admins (editor da home)
+
+Após rodar `006_site_settings_and_roles.sql`, um usuário já é promovido por `id` no script. Para promover **outros** super admins depois que criarem conta no Auth (whitelist em `admin_users` já existente), use e-mail:
+
+```sql
+update public.admin_users
+set role = 'super_admin'
+where email in ('email1@dominio.com', 'email2@dominio.com');
+```
+
+Quem for só `admin` continua com acesso aos cases; `super_admin` também acessa `/admin/editor-home`.
 
 ## Rodando o projeto
 

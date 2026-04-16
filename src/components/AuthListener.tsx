@@ -12,8 +12,10 @@ export default function AuthListener() {
       queryClient.setQueryData(['auth', 'session'], session ?? null)
       if (event === 'SIGNED_OUT') {
         queryClient.setQueryData(['auth', 'is-admin'], false)
+        queryClient.setQueryData(['auth', 'is-super-admin'], false)
       } else {
         queryClient.invalidateQueries({ queryKey: ['auth', 'is-admin'] })
+        queryClient.invalidateQueries({ queryKey: ['auth', 'is-super-admin'] })
       }
     })
     return () => subscription.unsubscribe()
