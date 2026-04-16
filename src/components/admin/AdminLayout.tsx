@@ -1,15 +1,32 @@
+import { useState } from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { LogOut } from 'lucide-react'
+import { toast } from 'sonner'
 import { Logo } from '@/components/Logo'
 import { Button } from '@/components/ui/button'
 import { signOut } from '@/lib/auth'
 
 export default function AdminLayout() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const [signingOut, setSigningOut] = useState(false)
 
   async function handleSignOut() {
-    await signOut()
-    navigate('/admin/login')
+    if (signingOut) return
+    setSigningOut(true)
+    try {
+      await signOut()
+      queryClient.setQueryData(['auth', 'session'], null)
+      queryClient.setQueryData(['auth', 'is-admin'], false)
+      queryClient.removeQueries({ queryKey: ['auth'] })
+      navigate('/admin/login', { replace: true })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Não foi possível sair.'
+      toast.error(message)
+    } finally {
+      setSigningOut(false)
+    }
   }
 
   return (
@@ -20,9 +37,15 @@ export default function AdminLayout() {
             <Logo variant="full" className="h-8 w-auto" />
             <span className="text-xs uppercase tracking-wider text-av-text-muted">Admin</span>
           </Link>
-          <Button variant="av-outline" onClick={handleSignOut} className="gap-2">
+          <Button
+            type="button"
+            variant="av-outline"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="gap-2"
+          >
             <LogOut className="h-4 w-4" />
-            Sair
+            {signingOut ? 'Saindo...' : 'Sair'}
           </Button>
         </div>
       </header>

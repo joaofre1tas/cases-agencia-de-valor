@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Logo } from '@/components/Logo'
@@ -8,6 +9,7 @@ import { signIn, isAdmin, useAuth, useIsAdmin } from '@/lib/auth'
 export default function AdminLogin() {
   const navigate = useNavigate()
   const location = useLocation()
+  const queryClient = useQueryClient()
   const sessionQuery = useAuth()
   const isAdminQuery = useIsAdmin(Boolean(sessionQuery.data))
   const [email, setEmail] = useState('')
@@ -36,14 +38,16 @@ export default function AdminLogin() {
     setLoading(true)
     setError(null)
     try {
-      await signIn(email, password)
+      const { session } = await signIn(email, password)
+      queryClient.setQueryData(['auth', 'session'], session)
       const allowed = await isAdmin()
       if (!allowed) {
         setError('Conta autenticada, mas sem acesso ao admin. Adicione na tabela admin_users.')
         return
       }
+      queryClient.setQueryData(['auth', 'is-admin'], true)
       const from = (location.state as { from?: string } | undefined)?.from ?? '/admin'
-      navigate(from)
+      navigate(from, { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Falha ao autenticar.')
     } finally {
