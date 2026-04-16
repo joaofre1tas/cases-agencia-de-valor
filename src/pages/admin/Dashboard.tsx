@@ -20,7 +20,7 @@ export default function AdminDashboard() {
           <p className="text-av-text-secondary">Gerencie preview e conteúdo completo de cada case.</p>
         </div>
         <Button asChild>
-          <Link to="/admin/cases/new">
+          <Link to="/admin/novo-case">
             <Plus className="h-4 w-4 mr-2" />
             Novo case
           </Link>

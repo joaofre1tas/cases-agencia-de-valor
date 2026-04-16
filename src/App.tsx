@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
@@ -25,6 +25,11 @@ function AdminFallback() {
       <p className="text-av-text-muted">Carregando área administrativa...</p>
     </div>
   )
+}
+
+function LegacyEditCaseRedirect() {
+  const { id } = useParams()
+  return <Navigate to={`/admin/editar-case/${id}`} replace />
 }
 
 const App = () => (
@@ -71,7 +76,7 @@ const App = () => (
                 }
               />
               <Route
-                path="/admin/cases/new"
+                path="/admin/novo-case"
                 element={
                   <Suspense fallback={<AdminFallback />}>
                     <AdminNewCase />
@@ -79,13 +84,16 @@ const App = () => (
                 }
               />
               <Route
-                path="/admin/cases/:id"
+                path="/admin/editar-case/:id"
                 element={
                   <Suspense fallback={<AdminFallback />}>
                     <AdminEditCase />
                   </Suspense>
                 }
               />
+              <Route path="/admin/cases/new" element={<Navigate to="/admin/novo-case" replace />} />
+              <Route path="/admin/cases/:id" element={<LegacyEditCaseRedirect />} />
+              <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
             </Route>
           </Route>
 

@@ -61,7 +61,7 @@ export default function CaseList({ cases }: CaseListProps) {
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-2">
                   <Button variant="av-outline" size="sm" asChild>
-                    <Link to={`/admin/cases/${item.id}`}>
+                    <Link to={`/admin/editar-case/${item.id}`}>
                       <Pencil className="h-4 w-4 mr-1" />
                       Editar
                     </Link>
