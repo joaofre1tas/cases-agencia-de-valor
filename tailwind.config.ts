@@ -105,9 +105,14 @@ export default {
           '0%': { transform: 'translateY(0%)' },
           '100%': { transform: 'translateY(-50%)' },
         },
+        'marquee-left': {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         'marquee-up': 'marquee-up 35s linear infinite',
+        'marquee-left': 'marquee-left 40s linear infinite',
       },
     },
   },

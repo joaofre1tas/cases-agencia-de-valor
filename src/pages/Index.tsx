@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { TestimonialCard } from '@/components/TestimonialCard'
-import { testimonials } from '@/data/testimonials'
 import { CaseCard } from '@/components/CaseCard'
 import { Search, Layers } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -67,7 +65,16 @@ export default function Index() {
     return () => observer.disconnect()
   }, [filteredCases])
 
-  const heroScrollingCards = testimonials.slice(0, 10)
+  const clientPhotos = [
+    '/home/clientes/cliente-01.webp',
+    '/home/clientes/cliente-02.webp',
+    '/home/clientes/cliente-03.webp',
+    '/home/clientes/cliente-04.webp',
+    '/home/clientes/cliente-05.webp',
+    '/home/clientes/cliente-06.webp',
+    '/home/clientes/cliente-07.webp',
+    '/home/clientes/cliente-08.webp',
+  ]
 
   return (
     <div className="w-full flex flex-col bg-av-bg">
@@ -112,18 +119,31 @@ export default function Index() {
               </div>
             </div>
 
-            {/* Cards rolando (desktop) */}
-            <div className="hidden lg:block relative h-[620px] mask-image-vertical">
-              <div className="absolute inset-0 flex flex-col gap-6 animate-marquee-up pt-10">
-                {heroScrollingCards.map((testimonial) => (
-                  <div key={`hero-orig-${testimonial.id}`} className="px-4">
-                    <TestimonialCard testimonial={testimonial} />
-                  </div>
+            {/* Fotos rolando (desktop) */}
+            <div className="hidden lg:block relative h-[620px] mask-image-horizontal overflow-hidden">
+              <div className="absolute inset-y-0 left-0 flex items-center gap-6 animate-marquee-left w-max">
+                {clientPhotos.map((src, index) => (
+                  <img
+                    key={`hero-orig-${index}`}
+                    src={src}
+                    alt={`Cliente da Agência de Valor recebendo placa de faturamento ${index + 1}`}
+                    loading="eager"
+                    decoding="async"
+                    className="h-[560px] w-auto rounded-xl object-cover shadow-elevation select-none shrink-0"
+                    draggable={false}
+                  />
                 ))}
-                {heroScrollingCards.map((testimonial) => (
-                  <div key={`hero-dup-${testimonial.id}`} className="px-4">
-                    <TestimonialCard testimonial={testimonial} />
-                  </div>
+                {clientPhotos.map((src, index) => (
+                  <img
+                    key={`hero-dup-${index}`}
+                    src={src}
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    decoding="async"
+                    className="h-[560px] w-auto rounded-xl object-cover shadow-elevation select-none shrink-0"
+                    draggable={false}
+                  />
                 ))}
               </div>
             </div>
