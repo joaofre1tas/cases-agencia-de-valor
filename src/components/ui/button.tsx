@@ -2,6 +2,7 @@
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
+import { ArrowRight } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -17,6 +18,9 @@ const buttonVariants = cva(
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'text-foreground hover:bg-accent hover:text-accent-foreground',
         link: 'text-foreground underline-offset-4 hover:underline',
+        av: 'btn-av',
+        'av-outline':
+          'border border-av-border bg-av-surface text-av-text hover:border-av-orange/40 hover:text-white',
       },
       size: {
         default: 'h-10 px-4 py-2',
@@ -33,7 +37,8 @@ const buttonVariants = cva(
 )
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
   asChild?: boolean
 }
 
@@ -47,4 +52,34 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = 'Button'
 
-export { Button, buttonVariants }
+/**
+ * CTA AV — botão primário com gradiente e círculo preto à direita.
+ * Uso: <ButtonAV onClick={...}>Aplicar agora</ButtonAV>
+ * O componente não adiciona padding extra; segue as regras do .btn-av do design system.
+ */
+interface ButtonAVProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  asChild?: boolean
+  icon?: React.ReactNode
+}
+
+const ButtonAV = React.forwardRef<HTMLButtonElement, ButtonAVProps>(
+  ({ className, children, icon, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'button'
+    const content = (
+      <>
+        <span>{children}</span>
+        <span className="btn-av-icon" aria-hidden>
+          {icon ?? <ArrowRight className="h-4 w-4" />}
+        </span>
+      </>
+    )
+    return (
+      <Comp ref={ref} className={cn('btn-av', className)} {...props}>
+        {asChild ? <span className="contents">{content}</span> : content}
+      </Comp>
+    )
+  },
+)
+ButtonAV.displayName = 'ButtonAV'
+
+export { Button, ButtonAV, buttonVariants }

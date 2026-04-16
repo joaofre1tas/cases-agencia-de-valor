@@ -20,27 +20,29 @@ export function TestimonialCard({ testimonial, className }: TestimonialCardProps
   return (
     <Card
       className={cn(
-        'rounded-[16px] border-[#E6E8EB] bg-white shadow-subtle hover:shadow-elevation transition-all duration-300 hover:-translate-y-1 p-6 flex flex-col gap-4',
+        'card-av hover-glow-av p-6 flex flex-col gap-4 shadow-subtle',
         className,
       )}
     >
       <div className="flex items-center gap-3">
-        <Avatar className="h-10 w-10 border border-[#E6E8EB]">
+        <Avatar className="h-10 w-10 border border-av-border">
           <AvatarImage src={testimonial.avatarUrl} alt={testimonial.name} />
-          <AvatarFallback className="bg-primary/5 text-primary text-xs font-medium">
+          <AvatarFallback className="bg-av-surface-2 text-av-text-secondary text-xs font-semibold">
             {getInitials(testimonial.name)}
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
-          <h3 className="text-[16px] font-medium leading-none text-[#0B0D12]">
+          <h3 className="text-[15px] font-semibold leading-none text-av-text">
             {testimonial.name}
           </h3>
-          <p className="text-[12px] text-[#5F6368] mt-1 leading-[1.66]">
+          <p className="text-[12px] text-av-text-muted mt-1 leading-[1.66]">
             {testimonial.role} @ {testimonial.company}
           </p>
         </div>
       </div>
-      <p className="text-[14px] text-[#0B0D12] leading-relaxed">"{testimonial.content}"</p>
+      <p className="text-[14px] text-av-text-secondary leading-relaxed">
+        "{testimonial.content}"
+      </p>
     </Card>
   )
 }

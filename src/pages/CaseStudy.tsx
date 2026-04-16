@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { ArrowRight, ExternalLink, Quote } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button, ButtonAV } from '@/components/ui/button'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,225 +11,244 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+import { getCaseBySlug, listCases } from '@/lib/cases'
+import { sanitizeRichHtml } from '@/lib/markdown'
 
 export default function CaseStudy() {
-  const { id } = useParams()
+  const { slug } = useParams()
+  const [searchParams] = useSearchParams()
+  const preview = searchParams.get('preview') === 'true'
+
+  const caseQuery = useQuery({
+    queryKey: ['public', 'case', slug, preview],
+    queryFn: () => getCaseBySlug(slug!, preview),
+    enabled: Boolean(slug),
+  })
+
+  const nextCasesQuery = useQuery({
+    queryKey: ['public', 'cases', 'next'],
+    queryFn: () => listCases(false),
+  })
 
   useEffect(() => {
     window.scrollTo(0, 0)
-  }, [id])
+  }, [slug])
+
+  if (caseQuery.isLoading) {
+    return <div className="py-24 text-center text-av-text-muted">Carregando case...</div>
+  }
+
+  if (caseQuery.isError || !caseQuery.data) {
+    return (
+      <div className="py-24 text-center text-av-text-muted">
+        Case não encontrado ou indisponível para visualização.
+      </div>
+    )
+  }
+
+  const caseItem = caseQuery.data
+  const nextCases = nextCasesQuery.data ?? []
+  const currentIdx = nextCases.findIndex((item) => item.slug === caseItem.slug)
+  const nextCase = currentIdx >= 0 && currentIdx < nextCases.length - 1 ? nextCases[currentIdx + 1] : null
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-av-bg text-av-text">
       <div className="container mx-auto px-4 max-w-[900px] pt-12 pb-24">
         {/* Hero */}
         <div className="flex flex-col items-center mb-16 animate-fade-in-up">
           <div className="mb-8">
             <img
-              src="https://img.usecurling.com/i?q=roi+lab&shape=outline&color=solid-black"
-              alt="ROI Lab Digital"
-              className="h-12 w-auto object-contain"
+              src={caseItem.logo_url || caseItem.cover_url || '/brand/av-symbol.svg'}
+              alt={caseItem.title}
+              className="h-12 w-auto object-contain opacity-90"
             />
           </div>
-          <h1 className="text-[32px] md:text-[48px] font-semibold text-[#0B0D12] leading-[1.15] tracking-tight text-center mb-6 max-w-4xl">
-            ROI Lab Digital: R$ 236.000 de Economia Anual com IA
+          <span className="eyebrow-av mb-5">Case · Agência de Valor</span>
+          <h1 className="text-[32px] md:text-[48px] font-semibold text-av-text leading-[1.1] tracking-tight text-center mb-6 max-w-4xl">
+            {caseItem.title}
           </h1>
-          <Badge
-            variant="outline"
-            className="bg-[#F6F7F9] text-[#5F6368] border-[#E6E8EB] px-4 py-1.5 text-sm font-medium rounded-full mb-8"
-          >
-            Consultoria
-          </Badge>
-          <p className="text-[18px] text-[#5F6368] max-w-2xl mx-auto leading-relaxed text-center">
-            Como a ROI Lab Digital utilizou Inteligência Artificial para escalar operações e
-            otimizar custos com pessoal
+          {caseItem.badge_label ? <span className="badge-av mb-8">{caseItem.badge_label}</span> : null}
+          <p className="text-[18px] text-av-text-secondary max-w-2xl mx-auto leading-[1.7] text-center">
+            {caseItem.subtitle || caseItem.description}
           </p>
         </div>
 
         {/* Breadcrumbs */}
-        <div className="mb-12 border-b border-[#E6E8EB] pb-6">
+        <div className="mb-12 border-b border-av-border pb-6">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/" className="text-[#5F6368] hover:text-[#0B0D12]">
+                  <Link to="/" className="text-av-text-muted hover:text-av-text">
                     Home
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator className="text-[#E6E8EB]" />
+              <BreadcrumbSeparator className="text-av-border" />
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/" className="text-[#5F6368] hover:text-[#0B0D12]">
+                  <Link to="/" className="text-av-text-muted hover:text-av-text">
                     Cases
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator className="text-[#E6E8EB]" />
+              <BreadcrumbSeparator className="text-av-border" />
               <BreadcrumbItem>
-                <BreadcrumbPage className="text-[#0B0D12] font-medium">
-                  ROI Lab Digital
+                <BreadcrumbPage className="text-av-text font-medium">
+                  {caseItem.agency_name || caseItem.title}
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
 
-        {/* Content */}
+        {/* Conteúdo */}
         <div className="space-y-16">
           <section>
-            <h2 className="text-[28px] font-semibold text-[#0B0D12] mb-6 tracking-tight">
-              O Desafio
+            <div className="eyebrow-av mb-3">{caseItem.challenge_eyebrow || 'O desafio'}</div>
+            <h2 className="text-[28px] font-semibold text-av-text mb-6 tracking-tight">
+              {caseItem.challenge_heading || 'Desafio'}
             </h2>
-            <div className="bg-[#F6F7F9] rounded-[24px] p-8 md:p-10">
-              <p className="text-[16px] text-[#5F6368] leading-[1.8]">
-                A ROI Lab Digital, consultoria especializada em Outsourcing de Marketing e Vendas
-                B2B, enfrentava um desafio crescente: a expansão de seus negócios vinha acompanhada
-                de um aumento proporcional nos custos com pessoal. Cada novo cliente ou contrato
-                significava a necessidade de contratar mais colaboradores em áreas como Inbound,
-                CRM, Conteúdo, Performance e Vendas. Essa dependência de mão de obra humana ameaçava
-                a sustentabilidade da margem de lucro a longo prazo, tornando imperativo encontrar
-                uma solução que permitisse o crescimento sem inflar a estrutura de custos.
-              </p>
+            <div className="card-av p-8 md:p-10">
+              <div
+                className="text-[16px] text-av-text-secondary leading-[1.8] prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeRichHtml(caseItem.challenge_content),
+                }}
+              />
             </div>
           </section>
 
           <section>
-            <h2 className="text-[28px] font-semibold text-[#0B0D12] mb-6 tracking-tight">
-              A Solução
+            <div className="eyebrow-av mb-3">{caseItem.solution_eyebrow || 'A solução'}</div>
+            <h2 className="text-[28px] font-semibold text-av-text mb-6 tracking-tight">
+              {caseItem.solution_heading || 'Solução'}
             </h2>
-            <div className="bg-[#F6F7F9] rounded-[24px] p-8 md:p-10">
-              <p className="text-[16px] text-[#5F6368] leading-[1.8]">
-                A ROI Lab Digital implementou a Inteligência Artificial como uma solução estratégica
-                para otimizar suas operações. Iniciando pela área de Tesouraria/BPO, a IA foi
-                utilizada para automatizar processos e reduzir a dependência de recursos humanos.
-                Esta iniciativa não só otimizou a gestão financeira, mas também demonstrou o
-                potencial da IA para absorver o aumento da demanda de novos contratos sem a
-                necessidade de novas contratações, provando ser um diferencial competitivo.
-              </p>
+            <div className="card-av p-8 md:p-10">
+              <div
+                className="text-[16px] text-av-text-secondary leading-[1.8] prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeRichHtml(caseItem.solution_content),
+                }}
+              />
             </div>
           </section>
 
           <section>
-            <h2 className="text-[28px] font-semibold text-[#0B0D12] mb-6 tracking-tight">
-              Os Resultados
+            <div className="eyebrow-av mb-3">{caseItem.results_eyebrow || 'Os resultados'}</div>
+            <h2 className="text-[28px] font-semibold text-av-text mb-6 tracking-tight">
+              {caseItem.results_heading || 'Resultados'}
             </h2>
-            <div className="bg-[#F6F7F9] rounded-[24px] p-8 md:p-10">
-              <p className="text-[16px] text-[#5F6368] leading-[1.8]">
-                A implementação da IA gerou uma impressionante economia anual de R$ 236.000 para a
-                ROI Lab Digital. Apenas na área de Tesouraria/BPO, a otimização de processos
-                resultou em R$ 36.000 de economia por ano. O impacto mais significativo, no entanto,
-                foi a capacidade de evitar a contratação de três novos profissionais — dois SDRs e
-                um Mídia — que seriam necessários para atender a dois grandes contratos
-                recém-adquiridos. Essa prevenção de novas contratações representou uma economia de
-                R$ 200.000 anuais, solidificando a IA como um pilar fundamental para a
-                escalabilidade e a manutenção das margens de lucro da empresa, abrindo caminho para
-                futuros ganhos de sinergia e produtividade.
-              </p>
+            <div className="card-av p-8 md:p-10">
+              <div
+                className="text-[16px] text-av-text-secondary leading-[1.8] prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeRichHtml(caseItem.results_content),
+                }}
+              />
             </div>
           </section>
 
           <section>
-            <h2 className="text-[28px] font-semibold text-[#0B0D12] mb-8 tracking-tight">
-              Métricas
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="flex flex-col items-center text-center">
-                <span className="text-[40px] md:text-[48px] font-semibold text-[#0B0D12] mb-2">
-                  R$ 236.000
-                </span>
-                <span className="text-[#5F6368] text-[15px] font-medium">Economia Gerada</span>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <span className="text-[40px] md:text-[48px] font-semibold text-[#0B0D12] mb-2">
-                  3
-                </span>
-                <span className="text-[#5F6368] text-[15px] font-medium">
-                  Contratações Evitadas
-                </span>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <span className="text-[40px] md:text-[48px] font-semibold text-[#0B0D12] mb-2">
-                  R$ 200.000
-                </span>
-                <span className="text-[#5F6368] text-[15px] font-medium">Economia com Pessoal</span>
-              </div>
+            <div className="eyebrow-av mb-4">Métricas</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {(caseItem.metrics || []).map((m, i) => (
+                <div
+                  key={i}
+                  className="card-av p-8 flex flex-col items-center text-center hover-glow-av"
+                >
+                  <span className="text-[40px] md:text-[48px] font-semibold leading-none mb-3 text-gradient-av">
+                    {m.value}
+                  </span>
+                  <span className="text-av-text-muted text-[12px] font-semibold uppercase tracking-wider">
+                    {m.label}
+                  </span>
+                </div>
+              ))}
             </div>
           </section>
 
           <section>
-            <div className="bg-[#F6F7F9] rounded-[24px] p-8 md:p-12 relative overflow-hidden">
-              <Quote className="absolute top-8 left-8 h-20 w-20 text-black/[0.03] rotate-180" />
+            <div className="card-av p-8 md:p-12 relative overflow-hidden">
+              <Quote
+                className="absolute top-8 left-8 h-20 w-20 text-av-text-muted/10 rotate-180"
+                aria-hidden
+              />
               <div className="relative z-10">
-                <p className="text-[20px] md:text-[24px] leading-relaxed text-[#0B0D12] italic mb-10 font-medium">
-                  "A implementação da IA foi um divisor de águas para a ROI Lab Digital. Conseguimos
-                  expandir nossa capacidade operacional e absorver novos grandes contratos sem
-                  comprometer nossa estrutura de custos, um resultado que antes parecia
-                  inalcançável. A IA não é apenas uma ferramenta, é um pilar estratégico para nosso
-                  crescimento sustentável."
+                <p className="text-[20px] md:text-[24px] leading-relaxed text-av-text italic mb-10 font-medium">
+                  "{caseItem.quote_text || 'Sem depoimento cadastrado para este case.'}"
                 </p>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                   <div className="flex items-center gap-4">
                     <img
-                      src="https://img.usecurling.com/ppl/thumbnail?gender=male&seed=1"
-                      alt="Matheus Gonzaga"
-                      className="h-14 w-14 rounded-full object-cover shadow-sm"
+                      src={
+                        caseItem.quote_author_avatar_url ||
+                        caseItem.avatar_url ||
+                        'https://img.usecurling.com/ppl/thumbnail?gender=male&seed=1'
+                      }
+                      alt={caseItem.quote_author_name || caseItem.title}
+                      className="h-14 w-14 rounded-full object-cover border border-av-border"
                     />
                     <div>
-                      <div className="font-semibold text-[#0B0D12] text-[16px]">
-                        Matheus Gonzaga
+                      <div className="font-semibold text-av-text text-[16px]">
+                        {caseItem.quote_author_name || 'Agência de Valor'}
                       </div>
-                      <div className="text-[14px] text-[#5F6368]">Founder • ROI Lab Digital</div>
+                      <div className="text-[14px] text-av-text-muted">{caseItem.quote_author_role}</div>
                     </div>
                   </div>
-                  <Button className="bg-[#0B0D12] text-white hover:bg-[#0B0D12]/90 rounded-xl px-6 h-12 w-full sm:w-auto font-medium transition-colors">
-                    Visitar ROI Lab Digital
-                    <ExternalLink className="ml-2 h-4 w-4" />
+                  <Button
+                    asChild
+                    variant="av-outline"
+                    className="h-11 rounded-md px-5 w-full sm:w-auto font-medium gap-2"
+                  >
+                    <a href={caseItem.quote_cta_url || '#'} target="_blank" rel="noreferrer">
+                      {caseItem.quote_cta_label || 'Ver mais'}
+                      <ExternalLink className="ml-1 h-4 w-4" />
+                    </a>
                   </Button>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* CTA Section */}
-          <section className="text-center py-16">
-            <h3 className="text-[32px] font-semibold text-[#0B0D12] mb-4 tracking-tight">
-              Pronto para transformar seu negócio?
+          {/* CTA final */}
+          <section className="text-center py-10">
+            <span className="eyebrow-av mb-4 inline-block">Próximo passo</span>
+            <h3 className="text-[32px] md:text-[40px] font-semibold text-av-text mb-4 tracking-tight leading-tight">
+              {caseItem.final_cta_heading || 'Sua agência vai ser o próximo case?'}
             </h3>
-            <p className="text-[18px] text-[#5F6368] mb-8">
-              Descubra como a IA pode revolucionar sua empresa
+            <p className="text-[18px] text-av-text-secondary mb-10 max-w-xl mx-auto leading-[1.7]">
+              {caseItem.final_cta_body ||
+                'Aplique para a Mentoria Agência de Valor e estruture sua agência para os R$100k todo mês.'}
             </p>
-            <Button className="bg-[#0B0D12] text-white hover:bg-[#0B0D12]/90 h-14 px-8 rounded-full text-[16px] font-medium shadow-elevation transition-all hover:scale-105 active:scale-95">
-              Conhecer a Plataforma
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            <div className="flex justify-center">
+              <ButtonAV asChild>
+                <a href={caseItem.final_cta_url || '#'}>{caseItem.final_cta_label || 'Aplicar agora'}</a>
+              </ButtonAV>
+            </div>
           </section>
 
-          {/* Navigation Footer */}
-          <div className="relative flex flex-col sm:flex-row items-center justify-center pt-8 pb-8 gap-6 border-t border-[#E6E8EB]">
-            <Button
-              variant="outline"
-              asChild
-              className="rounded-full px-8 h-12 border-[#E6E8EB] text-[#0B0D12] hover:bg-[#F6F7F9] font-medium"
-            >
+          {/* Navegação entre cases */}
+          <div className="relative flex flex-col sm:flex-row items-center justify-center pt-10 pb-8 gap-6 border-t border-av-border">
+            <Button variant="av-outline" asChild className="rounded-md px-6 h-11 font-medium">
               <Link to="/">Ver todos os cases</Link>
             </Button>
 
-            <div className="sm:absolute right-0 top-1/2 sm:-translate-y-1/2 mt-4 sm:mt-0">
-              <Link to="/cases/orion" className="group flex items-center gap-4 text-right">
-                <div className="flex flex-col">
-                  <span className="text-[11px] text-[#5F6368] font-semibold uppercase tracking-widest mb-1">
-                    Próximo Case
-                  </span>
-                  <span className="text-[18px] font-semibold text-[#0B0D12] group-hover:text-[#5F6368] transition-colors">
-                    Orion
-                  </span>
-                </div>
-                <div className="h-12 w-12 rounded-full border border-[#E6E8EB] flex items-center justify-center group-hover:bg-[#F6F7F9] transition-colors">
-                  <ArrowRight className="h-5 w-5 text-[#0B0D12]" />
-                </div>
-              </Link>
-            </div>
+            {nextCase ? (
+              <div className="sm:absolute right-0 top-1/2 sm:-translate-y-1/2 mt-4 sm:mt-0">
+                <Link to={`/cases/${nextCase.slug}`} className="group flex items-center gap-4 text-right">
+                  <div className="flex flex-col">
+                    <span className="eyebrow-av mb-1">Próximo case</span>
+                    <span className="text-[18px] font-semibold text-av-text group-hover:text-gradient-av transition-colors">
+                      {nextCase.title}
+                    </span>
+                  </div>
+                  <div className="h-11 w-11 rounded-full border border-av-border flex items-center justify-center group-hover:border-av-orange/50 transition-colors">
+                    <ArrowRight className="h-5 w-5 text-av-text" />
+                  </div>
+                </Link>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

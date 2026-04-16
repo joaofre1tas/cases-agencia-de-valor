@@ -26,7 +26,14 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Figtree', 'system-ui', 'sans-serif'],
+        display: ['Figtree', 'system-ui', 'sans-serif'],
+      },
+      fontWeight: {
+        normal: '400',
+        medium: '500',
+        semibold: '600',
+        bold: '600',
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -62,15 +69,36 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        av: {
+          bg: 'hsl(var(--av-bg))',
+          surface: 'hsl(var(--av-surface))',
+          'surface-2': 'hsl(var(--av-surface-2))',
+          border: 'hsl(var(--av-border))',
+          wm: 'hsl(var(--av-wm-fill))',
+          text: 'hsl(var(--av-text-primary))',
+          'text-secondary': 'hsl(var(--av-text-secondary))',
+          'text-muted': 'hsl(var(--av-text-muted))',
+          amber: 'hsl(var(--av-amber))',
+          orange: 'hsl(var(--av-orange))',
+          coral: 'hsl(var(--av-coral))',
+          'cta-orange': 'hsl(var(--av-cta-orange))',
+          'cta-red': 'hsl(var(--av-cta-red))',
+        },
+      },
+      backgroundImage: {
+        'av-gradient': 'var(--av-gradient-text)',
+        'av-cta': 'var(--av-gradient-cta)',
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        lg: 'var(--radius)',             /* 12px */
+        md: 'calc(var(--radius) - 4px)', /* 8px  */
+        sm: 'calc(var(--radius) - 6px)', /* 6px  (botões AV) */
+        xl: 'calc(var(--radius) + 4px)', /* 16px */
       },
       boxShadow: {
-        subtle: '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03)',
-        elevation: '0 10px 30px -5px rgba(2, 22, 42, 0.08)',
+        subtle: '0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2)',
+        elevation: '0 10px 30px -5px rgba(0, 0, 0, 0.5)',
+        'av-glow': '0 0 38px 0 #fc8338',
       },
       keyframes: {
         'marquee-up': {

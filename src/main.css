@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,44 +6,95 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 223 24% 6%; /* #0B0D12 */
+    /* ——————————————————————————————————————————————————
+     * Agência de Valor · Design Tokens
+     * —————————————————————————————————————————————————— */
 
-    --card: 0 0% 100%;
-    --card-foreground: 223 24% 6%;
+    /* Fundos e superfícies */
+    --av-bg: 0 0% 7%;              /* #121212 */
+    --av-surface: 0 0% 10%;        /* #1a1a1a */
+    --av-surface-2: 0 0% 13%;      /* #222222 — elevação extra */
+    --av-border: 0 0% 20%;         /* #333333 */
+    --av-wm-fill: 0 0% 16%;        /* #2a2a2a — watermark (fill, sem opacity) */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 223 24% 6%;
+    /* Texto */
+    --av-text-primary: 0 0% 96%;   /* #f4f4f4 */
+    --av-text-secondary: 0 0% 76%; /* #c1c1c1 */
+    --av-text-muted: 0 0% 40%;     /* #666666 */
 
-    --primary: 211 91% 9%; /* #02162A */
-    --primary-foreground: 210 40% 98%;
+    /* Marca — gradiente e destaques */
+    --av-amber: 41 99% 49%;        /* #f9a801 — logotipos legacy */
+    --av-orange: 36 100% 55%;      /* #ffa01a — ênfase */
+    --av-coral: 0 78% 64%;         /* #eb5d5d — ênfase */
+    --av-cta-orange: 21 97% 60%;   /* #FC8338 — CTA */
+    --av-cta-red: 0 100% 64%;      /* #FF4A4A — CTA */
 
-    --secondary: 210 20% 96%; /* #F6F7F9 */
-    --secondary-foreground: 211 91% 9%;
+    --av-gradient-text: linear-gradient(90deg, #eb5d5d 0%, #ffa01a 100%);
+    --av-gradient-cta: linear-gradient(90deg, #fc8338 0%, #ff4a4a 100%);
 
-    --muted: 210 20% 96%; /* #F6F7F9 */
-    --muted-foreground: 214 5% 39%; /* #5F6368 */
+    /* ——————————————————————————————————————————————————
+     * shadcn/ui · mapeamento para o tema AV (dark-first)
+     * —————————————————————————————————————————————————— */
 
-    --accent: 210 20% 96%; /* #F6F7F9 */
-    --accent-foreground: 211 91% 9%;
+    --background: var(--av-bg);
+    --foreground: var(--av-text-primary);
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --card: var(--av-surface);
+    --card-foreground: var(--av-text-primary);
 
-    --border: 216 12% 91%; /* #E6E8EB */
-    --input: 216 12% 91%;
-    --ring: 211 91% 9%;
+    --popover: var(--av-surface);
+    --popover-foreground: var(--av-text-primary);
 
-    --radius: 0.5rem;
+    /* Primary = âmbar AV (usar em focus rings, links ativos, ícones) */
+    --primary: var(--av-orange);
+    --primary-foreground: var(--av-bg);
+
+    --secondary: var(--av-surface-2);
+    --secondary-foreground: var(--av-text-primary);
+
+    --muted: var(--av-surface-2);
+    --muted-foreground: var(--av-text-muted);
+
+    --accent: var(--av-border);
+    --accent-foreground: var(--av-text-primary);
+
+    --destructive: var(--av-cta-red);
+    --destructive-foreground: var(--av-text-primary);
+
+    --border: var(--av-border);
+    --input: var(--av-border);
+    --ring: var(--av-orange);
+
+    --radius: 0.75rem; /* 12px — tokens: btn 6px · md 8px · lg 12px · xl 16px */
   }
 
   * {
     @apply border-border;
   }
 
+  html {
+    color-scheme: dark;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'ss01', 'cv11';
   }
+
+  ::selection {
+    background: hsl(var(--av-orange));
+    color: hsl(var(--av-bg));
+  }
+
+  /* Scrollbar sutil no tema dark */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: hsl(var(--av-bg)); }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--av-border));
+    border-radius: 8px;
+    border: 2px solid hsl(var(--av-bg));
+  }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--av-text-muted)); }
 
   section[aria-label='Notifications alt+T'] {
     padding: 0 !important;
@@ -51,7 +102,115 @@
   }
 }
 
+@layer components {
+  /* Eyebrow — label de seção com gradiente AV */
+  .eyebrow-av {
+    font-family: 'Figtree', system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: var(--av-gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Texto de ênfase com gradiente AV */
+  .text-gradient-av {
+    background: var(--av-gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* CTA — botão primário AV (gradiente + círculo preto à direita) */
+  .btn-av {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--av-gradient-cta);
+    color: #fff;
+    font-family: 'Figtree', system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 8px 7px 18px;
+    cursor: pointer;
+    transition:
+      box-shadow 0.4s ease,
+      transform 0.4s ease;
+  }
+
+  .btn-av:hover {
+    box-shadow: 0 0 38px 0 #fc8338;
+    transform: scale(1.05);
+  }
+
+  .btn-av:disabled {
+    opacity: 0.55;
+    transform: none;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  .btn-av-icon {
+    background: #000;
+    border-radius: 999px;
+    height: 30px;
+    width: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+  }
+
+  /* Card AV */
+  .card-av {
+    background: hsl(var(--av-surface));
+    border: 1px solid hsl(var(--av-border));
+    border-radius: 12px;
+  }
+
+  /* Badge gradiente AV */
+  .badge-av {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    background: linear-gradient(90deg, rgba(235, 93, 93, 0.18), rgba(255, 160, 26, 0.18));
+    color: hsl(var(--av-orange));
+    border: 1px solid rgba(255, 160, 26, 0.25);
+  }
+
+  /* Separador com gradiente AV */
+  .divider-av {
+    height: 1px;
+    width: 100%;
+    background: var(--av-gradient-text);
+    opacity: 0.35;
+    border: none;
+  }
+}
+
 @layer utilities {
+  .bg-gradient-av {
+    background-image: var(--av-gradient-text);
+  }
+
+  .bg-gradient-cta {
+    background-image: var(--av-gradient-cta);
+  }
+
   .mask-image-vertical {
     mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
     -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
@@ -70,5 +229,18 @@
 
   .animate-fade-in-up {
     animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Glow laranja sutil para hover de cards */
+  .hover-glow-av {
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
+  }
+  .hover-glow-av:hover {
+    border-color: hsl(var(--av-orange) / 0.4);
+    box-shadow: 0 0 0 1px hsl(var(--av-orange) / 0.15), 0 8px 30px -12px hsl(var(--av-orange) / 0.25);
+    transform: translateY(-2px);
   }
 }
