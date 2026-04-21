@@ -214,7 +214,7 @@ export function ApplicationFormModal() {
                       {...form.register('primeiro_nome')}
                       required
                       placeholder="Primeiro Nome:"
-                      className="h-12 border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange"
+                      className="application-form-control h-12 rounded-md border border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                     {form.formState.errors.primeiro_nome ? (
                       <p className="mt-1 text-xs text-red-300">{form.formState.errors.primeiro_nome.message}</p>
@@ -225,7 +225,7 @@ export function ApplicationFormModal() {
                       {...form.register('ultimo_nome')}
                       required
                       placeholder="Último Nome:"
-                      className="h-12 border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange"
+                      className="application-form-control h-12 rounded-md border border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                     {form.formState.errors.ultimo_nome ? (
                       <p className="mt-1 text-xs text-red-300">{form.formState.errors.ultimo_nome.message}</p>
@@ -240,7 +240,7 @@ export function ApplicationFormModal() {
                     required
                     autoComplete="email"
                     placeholder="Melhor E-mail:"
-                    className="h-12 border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange"
+                    className="application-form-control h-12 rounded-md border border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                   {form.formState.errors.email ? (
                     <p className="mt-1 text-xs text-red-300">{form.formState.errors.email.message}</p>
@@ -259,7 +259,7 @@ export function ApplicationFormModal() {
                         autoComplete="tel-national"
                         placeholder="WhatsApp com DDD:"
                         onChange={(e) => field.onChange(formatWhatsAppBR(e.target.value))}
-                        className="h-12 border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange"
+                        className="application-form-control h-12 rounded-md border border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-0 focus-visible:ring-offset-0"
                       />
                     )}
                   />
@@ -274,7 +274,7 @@ export function ApplicationFormModal() {
                     required
                     autoComplete="username"
                     placeholder="Qual seu @ no Instagram?"
-                    className="h-12 border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange"
+                    className="application-form-control h-12 rounded-md border border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                   {form.formState.errors.instagram ? (
                     <p className="mt-1 text-xs text-red-300">{form.formState.errors.instagram.message}</p>
@@ -302,7 +302,7 @@ export function ApplicationFormModal() {
                       render={({ field: controllerField }) => (
                         <Select value={controllerField.value} onValueChange={controllerField.onChange}>
                           <SelectTrigger
-                            className="h-12 border-av-border bg-av-surface text-base text-av-text focus:ring-av-orange"
+                            className="application-form-control h-12 rounded-md border border-av-border bg-av-surface text-base text-av-text focus:ring-0 focus:ring-offset-0"
                             aria-required
                           >
                             <SelectValue placeholder={field.placeholder} />
