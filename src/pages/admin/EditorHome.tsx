@@ -451,8 +451,11 @@ export default function EditorHome() {
               <Input id="cta_label" {...form.register('header.cta_label')} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cta_url">URL do CTA</Label>
+              <Label htmlFor="cta_url">URL do CTA (legado)</Label>
               <Input id="cta_url" {...form.register('header.cta_url')} placeholder="#" />
+              <p className="text-xs text-av-text-muted">
+                No site público, o botão abre o formulário de aplicação. Este campo é mantido por compatibilidade.
+              </p>
             </div>
           </TabsContent>
 

@@ -1,7 +1,9 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { ArrowRight, Mail, MapPin, Instagram, Linkedin, Youtube } from 'lucide-react'
+import { ApplicationFormModal } from '@/components/ApplicationFormModal'
 import { Logo } from '@/components/Logo'
+import { ApplicationModalProvider, useApplicationModal } from '@/contexts/ApplicationModalContext'
 import { flatRecordToFormValues, mergeSiteSettingsRows, useSiteSettings } from '@/lib/site-settings'
 import { sanitizeRichHtml } from '@/lib/markdown'
 import {
@@ -48,8 +50,9 @@ function SocialIcon({ platform }: { platform: string }) {
   return <Instagram className={cls} />
 }
 
-export default function Layout() {
+function LayoutFrame() {
   const siteSettingsQuery = useSiteSettings()
+  const { openApplicationModal } = useApplicationModal()
   const { header, footer } = useMemo(() => {
     const map = siteSettingsQuery.data ?? mergeSiteSettingsRows([])
     const full = flatRecordToFormValues(map)
@@ -81,15 +84,16 @@ export default function Layout() {
             <Logo variant="full" className="h-8 w-auto" />
           </Link>
 
-          <a
-            href={header.cta_url}
+          <button
+            type="button"
             className="btn-av shrink-0 max-w-max"
+            onClick={openApplicationModal}
           >
             <span>{header.cta_label}</span>
             <span className="btn-av-icon" aria-hidden>
               <ArrowRight className="h-4 w-4" />
             </span>
-          </a>
+          </button>
         </div>
       </header>
 
@@ -258,6 +262,15 @@ export default function Layout() {
           </div>
         </div>
       </footer>
+      <ApplicationFormModal />
     </div>
+  )
+}
+
+export default function Layout() {
+  return (
+    <ApplicationModalProvider>
+      <LayoutFrame />
+    </ApplicationModalProvider>
   )
 }

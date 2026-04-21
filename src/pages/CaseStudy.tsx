@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { ArrowRight, ExternalLink, Quote } from 'lucide-react'
 import { Button, ButtonAV } from '@/components/ui/button'
+import { useApplicationModal } from '@/contexts/ApplicationModalContext'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,6 +16,7 @@ import { getCaseBySlug, listCases } from '@/lib/cases'
 import { sanitizeRichHtml } from '@/lib/markdown'
 
 export default function CaseStudy() {
+  const { openApplicationModal } = useApplicationModal()
   const { slug } = useParams()
   const [searchParams] = useSearchParams()
   const preview = searchParams.get('preview') === 'true'
@@ -222,8 +224,8 @@ export default function CaseStudy() {
                 'Aplique para a Mentoria Agência de Valor e estruture sua agência para os R$100k todo mês.'}
             </p>
             <div className="flex justify-center">
-              <ButtonAV asChild>
-                <a href={caseItem.final_cta_url || '#'}>{caseItem.final_cta_label || 'Aplicar agora'}</a>
+              <ButtonAV type="button" onClick={openApplicationModal}>
+                {caseItem.final_cta_label || 'Aplicar agora'}
               </ButtonAV>
             </div>
           </section>
