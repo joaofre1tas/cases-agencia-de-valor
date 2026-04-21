@@ -4,6 +4,7 @@ import { Pencil, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import MetricsField from '@/components/admin/MetricsField'
 import ImageField from '@/components/admin/ImageField'
+import SegmentCombobox from '@/components/admin/SegmentCombobox'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -15,6 +16,8 @@ import {
   removeTestimonialVideo,
   updateTestimonialVideo,
 } from '@/lib/testimonial-videos'
+import { createSegment, deleteSegmentWithReplacement, listSegments, renameSegment } from '@/lib/segments'
+import { extractYoutubeId, youtubeThumbUrl } from '@/lib/youtube'
 
 type VideoFormState = {
   youtubeInput: string
@@ -42,35 +45,15 @@ const INITIAL_STATE: VideoFormState = {
   metrics: [],
 }
 
-function extractYoutubeId(input: string): string | null {
-  const raw = input.trim()
-  if (!raw) return null
-  const idLike = /^[a-zA-Z0-9_-]{11}$/.test(raw)
-  if (idLike) return raw
-
-  try {
-    const url = new URL(raw)
-    if (url.hostname.includes('youtu.be')) {
-      const v = url.pathname.replace('/', '')
-      return /^[a-zA-Z0-9_-]{11}$/.test(v) ? v : null
-    }
-    if (url.hostname.includes('youtube.com')) {
-      const fromQuery = url.searchParams.get('v')
-      if (fromQuery && /^[a-zA-Z0-9_-]{11}$/.test(fromQuery)) return fromQuery
-      const pathParts = url.pathname.split('/')
-      const embed = pathParts[pathParts.length - 1]
-      return /^[a-zA-Z0-9_-]{11}$/.test(embed) ? embed : null
-    }
-    return null
-  } catch {
-    return null
-  }
-}
-
 export default function VideoTestimonialsManager() {
   const queryClient = useQueryClient()
   const [form, setForm] = useState<VideoFormState>(INITIAL_STATE)
   const [editingId, setEditingId] = useState<string | null>(null)
+
+  const segmentsQuery = useQuery({
+    queryKey: ['segments'],
+    queryFn: listSegments,
+  })
 
   const videosQuery = useQuery({
     queryKey: ['admin', 'testimonial-videos'],
@@ -104,6 +87,39 @@ export default function VideoTestimonialsManager() {
       toast.success('Vídeo removido.')
       await queryClient.invalidateQueries({ queryKey: ['admin', 'testimonial-videos'] })
       await queryClient.invalidateQueries({ queryKey: ['public', 'testimonial-videos'] })
+    },
+    onError: (error: Error) => toast.error(error.message),
+  })
+
+  const createSegmentMutation = useMutation({
+    mutationFn: (name: string) => createSegment(name),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['segments'] })
+      toast.success('Segmento criado.')
+    },
+    onError: (error: Error) => toast.error(error.message),
+  })
+
+  const renameSegmentMutation = useMutation({
+    mutationFn: ({ currentName, nextName }: { currentName: string; nextName: string }) =>
+      renameSegment(currentName, nextName),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['segments'] })
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'cases'] })
+      await queryClient.invalidateQueries({ queryKey: ['public', 'cases'] })
+      toast.success('Segmento atualizado.')
+    },
+    onError: (error: Error) => toast.error(error.message),
+  })
+
+  const deleteSegmentMutation = useMutation({
+    mutationFn: ({ name, replacement }: { name: string; replacement?: string }) =>
+      deleteSegmentWithReplacement(name, replacement),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['segments'] })
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'cases'] })
+      await queryClient.invalidateQueries({ queryKey: ['public', 'cases'] })
+      toast.success('Segmento excluído.')
     },
     onError: (error: Error) => toast.error(error.message),
   })
@@ -222,10 +238,17 @@ export default function VideoTestimonialsManager() {
 
         <div className="space-y-2">
           <Label>Nicho *</Label>
-          <Input
+          <SegmentCombobox
             value={form.segment}
-            onChange={(event) => setForm((prev) => ({ ...prev, segment: event.target.value }))}
-            className="bg-av-bg border-av-border"
+            options={segmentsQuery.data ?? []}
+            onChange={(segment) => setForm((prev) => ({ ...prev, segment }))}
+            onCreate={(name) => createSegmentMutation.mutateAsync(name)}
+            onRename={(currentName, nextName) =>
+              renameSegmentMutation.mutateAsync({ currentName, nextName })
+            }
+            onDeleteWithReplacement={(name, replacement) =>
+              deleteSegmentMutation.mutateAsync({ name, replacement })
+            }
           />
         </div>
 
@@ -306,14 +329,22 @@ export default function VideoTestimonialsManager() {
 
       <div className="space-y-2 pt-3 border-t border-av-border">
         {videosQuery.isLoading ? <p className="text-sm text-av-text-muted">Carregando vídeos...</p> : null}
-        {(videosQuery.data ?? []).map((item) => (
-          <div key={item.id} className="rounded-md border border-av-border p-3 flex items-center gap-3">
+        {(videosQuery.data ?? []).map((item) => {
+          const thumbnailUrl = youtubeThumbUrl(item.youtube_video_id)
+          return (
+            <div key={item.id} className="rounded-md border border-av-border p-3 flex items-center gap-3">
             <div className="h-12 w-20 rounded overflow-hidden border border-av-border bg-av-surface shrink-0">
-              <img
-                src={`https://i.ytimg.com/vi/${item.youtube_video_id}/hqdefault.jpg`}
-                alt={item.headline}
-                className="h-full w-full object-cover"
-              />
+              {thumbnailUrl ? (
+                <img
+                  src={thumbnailUrl}
+                  alt={item.headline}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="h-full w-full flex items-center justify-center text-[10px] text-av-text-muted">
+                  vídeo inválido
+                </div>
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm text-av-text truncate">{item.headline}</p>
@@ -349,7 +380,8 @@ export default function VideoTestimonialsManager() {
               <Trash2 className="h-4 w-4 text-red-400" />
             </Button>
           </div>
-        ))}
+          )
+        })}
       </div>
     </section>
   )

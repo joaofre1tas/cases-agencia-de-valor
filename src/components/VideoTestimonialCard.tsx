@@ -1,24 +1,29 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
+import { youtubeEmbedUrl } from '@/lib/youtube'
 import type { TestimonialVideoWithMetrics } from '@/lib/testimonial-videos'
 
-function youtubeEmbedUrl(videoId: string): string {
-  return `https://www.youtube-nocookie.com/embed/${videoId}`
-}
-
 export function VideoTestimonialCard({ item }: { item: TestimonialVideoWithMetrics }) {
+  const embedUrl = youtubeEmbedUrl(item.youtube_video_id)
+
   return (
     <Card className="flex flex-col h-full card-av hover-glow-av overflow-hidden">
       <div className="relative aspect-video border-b border-av-border bg-av-bg overflow-hidden">
-        <iframe
-          className="absolute inset-0 h-full w-full"
-          src={youtubeEmbedUrl(item.youtube_video_id)}
-          title={`Depoimento em vídeo — ${item.agency_name}`}
-          loading="lazy"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-          referrerPolicy="strict-origin-when-cross-origin"
-        />
+        {embedUrl ? (
+          <iframe
+            className="absolute inset-0 h-full w-full"
+            src={embedUrl}
+            title={`Depoimento em vídeo — ${item.agency_name}`}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-sm text-av-text-muted">
+            Link de vídeo inválido.
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col flex-1 p-6 md:p-7">
