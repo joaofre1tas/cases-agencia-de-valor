@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CaseCard } from '@/components/CaseCard'
 import { BellPrintsGallery } from '@/components/BellPrintsGallery'
@@ -29,7 +29,6 @@ import {
 import { cn } from '@/lib/utils'
 
 export default function Index() {
-  const gridRef = useRef<HTMLDivElement>(null)
   const [searchParams, setSearchParams] = useSearchParams()
   const initialTab = searchParams.get('tab')
   const [activeTab, setActiveTab] = useState<'estudos' | 'sinos' | 'videos'>(
@@ -48,10 +47,14 @@ export default function Index() {
   const bellPrintsQuery = useQuery({
     queryKey: ['public', 'bell-prints'],
     queryFn: () => listBellPrints(false),
+    enabled: activeTab === 'sinos',
+    retry: false,
   })
   const testimonialVideosQuery = useQuery({
     queryKey: ['public', 'testimonial-videos'],
     queryFn: () => listTestimonialVideos(false),
+    enabled: activeTab === 'videos',
+    retry: false,
   })
   const siteSettingsQuery = useSiteSettings()
   const cases = useMemo(() => casesQuery.data ?? [], [casesQuery.data])
@@ -71,37 +74,6 @@ export default function Index() {
       return matchesSearch && matchesSegment
     })
   }, [cases, searchQuery, segmentFilter])
-
-  useEffect(() => {
-    if (activeTab !== 'estudos') {
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-fade-in-up')
-            entry.target.classList.remove('opacity-0', 'translate-y-4')
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      { threshold: 0.1, rootMargin: '50px' },
-    )
-
-    const children = gridRef.current?.children
-    if (children) {
-      Array.from(children).forEach((child, index) => {
-        ;(child as HTMLElement).style.animationDelay = `${(index % 6) * 100}ms`
-        child.classList.add('opacity-0', 'translate-y-4')
-        child.classList.remove('animate-fade-in-up')
-        observer.observe(child)
-      })
-    }
-
-    return () => observer.disconnect()
-  }, [filteredCases, activeTab])
 
   useEffect(() => {
     const current = searchParams.get('tab')
@@ -310,16 +282,12 @@ export default function Index() {
                 <div className="card-av p-8 text-center text-av-text-muted">Carregando cases...</div>
               ) : null}
 
-              <div
-                ref={gridRef}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
-              >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                 {filteredCases.map((caseItem) => (
                   <Link
                     to={`/cases/${caseItem.slug}`}
                     key={caseItem.id}
-                    className="opacity-0 translate-y-4 transition-all duration-500 ease-out block hover:no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-av-orange rounded-xl"
-                    style={{ willChange: 'opacity, transform' }}
+                    className="block hover:no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-av-orange rounded-xl"
                   >
                     <CaseCard caseItem={caseItem} />
                   </Link>
@@ -336,6 +304,10 @@ export default function Index() {
             <TabsContent value="sinos" className="mt-0">
               {bellPrintsQuery.isLoading ? (
                 <div className="card-av p-8 text-center text-av-text-muted">Carregando sinos...</div>
+              ) : bellPrintsQuery.isError ? (
+                <div className="card-av p-8 text-center text-av-text-muted">
+                  Não foi possível carregar os sinos agora.
+                </div>
               ) : (
                 <BellPrintsGallery prints={bellPrintsQuery.data ?? []} />
               )}
@@ -344,6 +316,10 @@ export default function Index() {
             <TabsContent value="videos" className="mt-0">
               {testimonialVideosQuery.isLoading ? (
                 <div className="card-av p-8 text-center text-av-text-muted">Carregando vídeos...</div>
+              ) : testimonialVideosQuery.isError ? (
+                <div className="card-av p-8 text-center text-av-text-muted">
+                  Não foi possível carregar os vídeos agora.
+                </div>
               ) : testimonialVideosQuery.data && testimonialVideosQuery.data.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                   {testimonialVideosQuery.data.map((item) => (
