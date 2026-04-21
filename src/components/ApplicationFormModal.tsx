@@ -15,7 +15,10 @@ const applicationSchema = z.object({
   primeiro_nome: z.string().trim().min(1, 'Informe o primeiro nome'),
   ultimo_nome: z.string().trim().min(1, 'Informe o último nome'),
   email: z.string().trim().email('Informe um e-mail válido'),
-  whatsapp: z.string().trim().min(8, 'Informe um WhatsApp válido'),
+  whatsapp: z
+    .string()
+    .min(1, 'Informe o WhatsApp')
+    .refine((val) => val.replace(/\D/g, '').length === 11, 'Informe DDD + 9 dígitos'),
   instagram: z.string().trim().min(1, 'Informe seu @ no Instagram'),
   faturamento: z.string().min(1, 'Selecione uma opção'),
   socios: z.string().min(1, 'Selecione uma opção'),
@@ -77,6 +80,14 @@ const QUANDO_RESOLVER_OPTIONS = [
 
 type Step = 1 | 2
 
+function formatWhatsAppBR(raw: string): string {
+  const d = raw.replace(/\D/g, '').slice(0, 11)
+  if (d.length === 0) return ''
+  if (d.length <= 2) return `(${d}`
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
+}
+
 export function ApplicationFormModal() {
   const { open, setOpen, closeApplicationModal } = useApplicationModal()
   const [step, setStep] = useState<Step>(1)
@@ -128,6 +139,7 @@ export function ApplicationFormModal() {
       const params = new URLSearchParams(window.location.search)
       const payload = {
         ...values,
+        whatsapp: values.whatsapp.replace(/\D/g, ''),
         meta: {
           origem: 'cases-agencia-de-valor',
           page_url: window.location.href,
@@ -167,39 +179,24 @@ export function ApplicationFormModal() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="border-av-orange/80 bg-av-bg/95 p-0 text-av-text shadow-[0_30px_80px_rgba(0,0,0,0.65)] backdrop-blur-sm max-w-[520px] overflow-hidden [&>button]:right-5 [&>button]:top-5 [&>button]:text-white [&>button]:opacity-90 [&>button:hover]:opacity-100">
+      <DialogContent className="border-av-border bg-av-bg p-0 text-av-text shadow-[0_30px_80px_rgba(0,0,0,0.65)] max-w-[520px] overflow-hidden [&>button]:right-5 [&>button]:top-5 [&>button]:text-av-text-secondary [&>button]:opacity-90 [&>button:hover]:opacity-100">
         <DialogTitle className="sr-only">Formulário de aplicação</DialogTitle>
         <DialogDescription className="sr-only">
           Formulário em duas etapas para aplicação na mentoria.
         </DialogDescription>
 
-        <div className="relative px-8 py-8 sm:px-10">
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "linear-gradient(180deg, rgba(5,10,18,0.86) 0%, rgba(5,10,18,0.95) 100%), url('/home/hero-bg.webp')",
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(255,150,30,0.25),transparent_58%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_85%,rgba(5,60,150,0.18),transparent_62%)]" />
-
+        <div className="relative bg-gradient-to-b from-av-surface to-av-bg px-8 py-8 sm:px-10">
           <div className="relative z-10">
-            <div className="mb-5 flex justify-center">
-              <Logo variant="full" className="h-20 w-auto sm:h-24" />
+            <div className="mb-4 flex justify-center">
+              <Logo variant="full" className="h-12 w-auto sm:h-14" />
             </div>
             <p className="mx-auto max-w-[420px] text-center text-[17px] leading-snug text-av-text-secondary sm:text-[18px]">
               Envie sua aplicação e{' '}
-              <span className="font-semibold text-av-orange">
-                meu time entra em contato para agendar
-              </span>{' '}
+              <span className="text-gradient-av font-semibold">meu time entra em contato para agendar</span>{' '}
               sua apresentação da mentoria.
             </p>
 
-          <div className="mt-6 h-5 w-full rounded-md bg-white/20">
+          <div className="mt-6 h-5 w-full rounded-md bg-av-surface-2">
             <div
               className="flex h-full items-center justify-end rounded-md bg-gradient-to-r from-[#f5a20b] to-[#e87120] pr-3 text-sm font-bold text-black"
               style={{ width: progressWidth }}
@@ -215,8 +212,9 @@ export function ApplicationFormModal() {
                   <div>
                     <Input
                       {...form.register('primeiro_nome')}
+                      required
                       placeholder="Primeiro Nome:"
-                      className="h-12 border-av-border bg-[#1d1a2b] text-base text-white placeholder:text-white/60 focus-visible:ring-av-orange"
+                      className="h-12 border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange"
                     />
                     {form.formState.errors.primeiro_nome ? (
                       <p className="mt-1 text-xs text-red-300">{form.formState.errors.primeiro_nome.message}</p>
@@ -225,8 +223,9 @@ export function ApplicationFormModal() {
                   <div>
                     <Input
                       {...form.register('ultimo_nome')}
+                      required
                       placeholder="Último Nome:"
-                      className="h-12 border-av-border bg-[#1d1a2b] text-base text-white placeholder:text-white/60 focus-visible:ring-av-orange"
+                      className="h-12 border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange"
                     />
                     {form.formState.errors.ultimo_nome ? (
                       <p className="mt-1 text-xs text-red-300">{form.formState.errors.ultimo_nome.message}</p>
@@ -237,8 +236,11 @@ export function ApplicationFormModal() {
                 <div>
                   <Input
                     {...form.register('email')}
+                    type="email"
+                    required
+                    autoComplete="email"
                     placeholder="Melhor E-mail:"
-                    className="h-12 border-av-border bg-[#1d1a2b] text-base text-white placeholder:text-white/60 focus-visible:ring-av-orange"
+                    className="h-12 border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange"
                   />
                   {form.formState.errors.email ? (
                     <p className="mt-1 text-xs text-red-300">{form.formState.errors.email.message}</p>
@@ -246,10 +248,20 @@ export function ApplicationFormModal() {
                 </div>
 
                 <div>
-                  <Input
-                    {...form.register('whatsapp')}
-                    placeholder="WhatsApp com DDD:"
-                    className="h-12 border-av-border bg-[#1d1a2b] text-base text-white placeholder:text-white/60 focus-visible:ring-av-orange"
+                  <Controller
+                    name="whatsapp"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        required
+                        inputMode="numeric"
+                        autoComplete="tel-national"
+                        placeholder="WhatsApp com DDD:"
+                        onChange={(e) => field.onChange(formatWhatsAppBR(e.target.value))}
+                        className="h-12 border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange"
+                      />
+                    )}
                   />
                   {form.formState.errors.whatsapp ? (
                     <p className="mt-1 text-xs text-red-300">{form.formState.errors.whatsapp.message}</p>
@@ -259,21 +271,26 @@ export function ApplicationFormModal() {
                 <div>
                   <Input
                     {...form.register('instagram')}
+                    required
+                    autoComplete="username"
                     placeholder="Qual seu @ no Instagram?"
-                    className="h-12 border-av-border bg-[#1d1a2b] text-base text-white placeholder:text-white/60 focus-visible:ring-av-orange"
+                    className="h-12 border-av-border bg-av-surface text-base text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange"
                   />
                   {form.formState.errors.instagram ? (
                     <p className="mt-1 text-xs text-red-300">{form.formState.errors.instagram.message}</p>
                   ) : null}
                 </div>
 
-                <Button
-                  type="button"
-                  onClick={handleContinue}
-                  className="h-12 w-full bg-gradient-to-r from-[#f5a20b] to-[#e87120] text-lg font-semibold tracking-wide text-white hover:opacity-95"
-                >
-                  CONTINUAR
-                </Button>
+                <div className="flex justify-center pt-1">
+                  <Button
+                    type="button"
+                    variant="av"
+                    onClick={handleContinue}
+                    className="h-12 px-6 text-base font-semibold uppercase tracking-wide hover:opacity-95"
+                  >
+                    CONTINUAR
+                  </Button>
+                </div>
               </>
             ) : (
               <>
@@ -284,15 +301,18 @@ export function ApplicationFormModal() {
                       control={form.control}
                       render={({ field: controllerField }) => (
                         <Select value={controllerField.value} onValueChange={controllerField.onChange}>
-                          <SelectTrigger className="h-12 border-av-border bg-[#1d1a2b] text-base text-white focus:ring-av-orange">
+                          <SelectTrigger
+                            className="h-12 border-av-border bg-av-surface text-base text-av-text focus:ring-av-orange"
+                            aria-required
+                          >
                             <SelectValue placeholder={field.placeholder} />
                           </SelectTrigger>
-                          <SelectContent className="border-av-border bg-[#1d1a2b] text-white">
+                          <SelectContent className="border-av-border bg-av-surface text-av-text">
                             {field.options.map((option) => (
                               <SelectItem
                                 key={option}
                                 value={option}
-                                className="text-base focus:bg-[#9ebde0] focus:text-[#0a1726]"
+                                className="text-base focus:bg-av-surface-2 focus:text-av-text"
                               >
                                 {option}
                               </SelectItem>
