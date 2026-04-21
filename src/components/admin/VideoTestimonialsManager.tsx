@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Trash2 } from 'lucide-react'
+import { Pencil, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import MetricsField from '@/components/admin/MetricsField'
 import ImageField from '@/components/admin/ImageField'
@@ -70,6 +70,7 @@ function extractYoutubeId(input: string): string | null {
 export default function VideoTestimonialsManager() {
   const queryClient = useQueryClient()
   const [form, setForm] = useState<VideoFormState>(INITIAL_STATE)
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   const videosQuery = useQuery({
     queryKey: ['admin', 'testimonial-videos'],
@@ -88,8 +89,8 @@ export default function VideoTestimonialsManager() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, published }: { id: string; published: boolean }) =>
-      updateTestimonialVideo(id, { published }),
+    mutationFn: ({ id, payload }: { id: string; payload: Parameters<typeof updateTestimonialVideo>[1] }) =>
+      updateTestimonialVideo(id, payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'testimonial-videos'] })
       await queryClient.invalidateQueries({ queryKey: ['public', 'testimonial-videos'] })
@@ -133,11 +134,67 @@ export default function VideoTestimonialsManager() {
     })
   }
 
+  async function handleSaveEdit() {
+    if (!editingId) return
+    if (!derivedId) {
+      toast.error('Informe uma URL/ID de YouTube válida.')
+      return
+    }
+    if (!form.headline.trim() || !form.agencyName.trim() || !form.founderName.trim() || !form.segment.trim()) {
+      toast.error('Preencha os campos obrigatórios.')
+      return
+    }
+
+    await updateMutation.mutateAsync({
+      id: editingId,
+      payload: {
+        youtube_video_id: derivedId,
+        headline: form.headline.trim(),
+        description: form.description.trim() || null,
+        agency_name: form.agencyName.trim(),
+        founder_name: form.founderName.trim(),
+        founder_avatar_url: form.founderAvatarUrl.trim() || null,
+        segment: form.segment.trim(),
+        sort_order: form.sortOrder,
+        published: form.published,
+        metrics: form.metrics,
+      },
+    })
+
+    toast.success('Vídeo atualizado.')
+    setEditingId(null)
+    setForm(INITIAL_STATE)
+  }
+
+  function handleStartEdit(item: Awaited<ReturnType<typeof listTestimonialVideos>>[number]) {
+    setEditingId(item.id)
+    setForm({
+      youtubeInput: item.youtube_video_id,
+      headline: item.headline,
+      description: item.description || '',
+      agencyName: item.agency_name,
+      founderName: item.founder_name,
+      founderAvatarUrl: item.founder_avatar_url || '',
+      segment: item.segment,
+      sortOrder: item.sort_order,
+      published: item.published,
+      metrics: item.metrics ?? [],
+    })
+  }
+
+  function handleCancelEdit() {
+    setEditingId(null)
+    setForm(INITIAL_STATE)
+  }
+
   return (
     <section className="card-av p-4 space-y-4">
       <div>
         <h2 className="text-xl font-semibold">Vídeos</h2>
         <p className="text-sm text-av-text-secondary">Cadastre depoimentos em vídeo para a aba Vídeos.</p>
+        {editingId ? (
+          <p className="text-xs text-av-orange mt-1">Editando vídeo selecionado</p>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -227,9 +284,25 @@ export default function VideoTestimonialsManager() {
         Publicado
       </label>
 
-      <Button type="button" onClick={() => void handleCreate()} disabled={createMutation.isPending}>
-        {createMutation.isPending ? 'Salvando...' : 'Adicionar vídeo'}
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          onClick={() => void (editingId ? handleSaveEdit() : handleCreate())}
+          disabled={createMutation.isPending || updateMutation.isPending}
+        >
+          {createMutation.isPending || updateMutation.isPending
+            ? 'Salvando...'
+            : editingId
+              ? 'Salvar alterações'
+              : 'Adicionar vídeo'}
+        </Button>
+        {editingId ? (
+          <Button type="button" variant="av-outline" onClick={handleCancelEdit}>
+            <X className="h-4 w-4 mr-2" />
+            Cancelar edição
+          </Button>
+        ) : null}
+      </div>
 
       <div className="space-y-2 pt-3 border-t border-av-border">
         {videosQuery.isLoading ? <p className="text-sm text-av-text-muted">Carregando vídeos...</p> : null}
@@ -252,11 +325,20 @@ export default function VideoTestimonialsManager() {
               <Checkbox
                 checked={item.published}
                 onCheckedChange={(checked) =>
-                  void updateMutation.mutateAsync({ id: item.id, published: checked === true })
+                  void updateMutation.mutateAsync({ id: item.id, payload: { published: checked === true } })
                 }
               />
               Publicado
             </label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => handleStartEdit(item)}
+              disabled={deleteMutation.isPending}
+            >
+              <Pencil className="h-4 w-4 text-av-text-secondary" />
+            </Button>
             <Button
               type="button"
               variant="ghost"
