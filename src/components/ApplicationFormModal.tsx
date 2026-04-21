@@ -286,7 +286,7 @@ export function ApplicationFormModal() {
                     type="button"
                     variant="av"
                     onClick={handleContinue}
-                    className="h-12 px-6 text-base font-semibold uppercase tracking-wide hover:opacity-95"
+                    className="btn-av--lift h-12 px-6 text-base font-semibold uppercase tracking-wide"
                   >
                     CONTINUAR
                   </Button>

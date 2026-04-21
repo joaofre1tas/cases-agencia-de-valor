@@ -152,6 +152,12 @@
     transform: scale(1.05);
   }
 
+  /* Hover sem glow/scale — leve lift (ex.: modal de aplicação) */
+  .btn-av.btn-av--lift:hover {
+    box-shadow: none;
+    transform: translateY(-4px);
+  }
+
   .btn-av:disabled {
     opacity: 0.55;
     transform: none;
