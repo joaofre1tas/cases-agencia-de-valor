@@ -153,6 +153,12 @@
   }
 
   /* Hover sem glow/scale — leve lift (ex.: modal de aplicação) */
+  .btn-av.btn-av--lift {
+    transition:
+      transform 0.45s cubic-bezier(0.33, 1, 0.68, 1),
+      box-shadow 0.45s ease;
+  }
+
   .btn-av.btn-av--lift:hover {
     box-shadow: none;
     transform: translateY(-4px);
