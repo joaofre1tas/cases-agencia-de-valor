@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { Play } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
 import { youtubeEmbedUrl, youtubeThumbUrl } from '@/lib/youtube'
@@ -6,11 +8,13 @@ import type { TestimonialVideoWithMetrics } from '@/lib/testimonial-videos'
 export function VideoTestimonialCard({ item }: { item: TestimonialVideoWithMetrics }) {
   const embedUrl = youtubeEmbedUrl(item.youtube_video_id)
   const thumbnailUrl = youtubeThumbUrl(item.youtube_video_id)
+  const [playRequested, setPlayRequested] = useState(false)
+  const showIframe = Boolean(embedUrl && playRequested)
 
   return (
     <Card className="flex flex-col h-full card-av hover-glow-av overflow-hidden">
       <div className="relative aspect-video border-b border-av-border bg-av-bg overflow-hidden">
-        {embedUrl ? (
+        {showIframe ? (
           <iframe
             className="absolute inset-0 h-full w-full"
             src={embedUrl}
@@ -21,13 +25,26 @@ export function VideoTestimonialCard({ item }: { item: TestimonialVideoWithMetri
             referrerPolicy="strict-origin-when-cross-origin"
           />
         ) : thumbnailUrl ? (
-          <img
-            src={thumbnailUrl}
-            alt={`Thumbnail do depoimento — ${item.agency_name}`}
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+          <button
+            type="button"
+            className="absolute inset-0 group"
+            onClick={() => setPlayRequested(true)}
+            aria-label={`Reproduzir depoimento de ${item.agency_name}`}
+          >
+            <img
+              src={thumbnailUrl}
+              alt={`Thumbnail do depoimento — ${item.agency_name}`}
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+            />
+            <div className="absolute inset-0 bg-black/35 group-hover:bg-black/25 transition-colors duration-300" />
+            <span className="absolute inset-0 flex items-center justify-center">
+              <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-black/75 border border-white/15">
+                <Play className="h-6 w-6 text-white fill-white ml-0.5" />
+              </span>
+            </span>
+          </button>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-sm text-av-text-muted">
             Link de vídeo inválido.
