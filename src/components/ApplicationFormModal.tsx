@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckCircle2 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
@@ -89,6 +90,7 @@ function formatWhatsAppBR(raw: string): string {
 }
 
 export function ApplicationFormModal() {
+  const navigate = useNavigate()
   const { open, setOpen, closeApplicationModal } = useApplicationModal()
   const [step, setStep] = useState<Step>(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -161,11 +163,8 @@ export function ApplicationFormModal() {
         throw new Error('Falha ao enviar aplicação')
       }
 
-      toast({
-        title: 'Aplicação enviada',
-        description: 'Recebemos seus dados e nosso time vai entrar em contato.',
-      })
       closeApplicationModal()
+      navigate('/confirma', { replace: true })
     } catch {
       toast({
         title: 'Não foi possível enviar',

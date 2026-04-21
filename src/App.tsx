@@ -8,6 +8,7 @@ import Index from './pages/Index'
 import NotFound from './pages/NotFound'
 import Layout from './components/Layout'
 import CaseStudy from './pages/CaseStudy'
+import Confirma from './pages/Confirma'
 import AuthListener from '@/components/AuthListener'
 
 const AdminLogin = lazy(() => import('@/pages/admin/Login'))
@@ -45,6 +46,7 @@ const App = () => (
           <Route element={<Layout />}>
             <Route path="/" element={<Index />} />
             <Route path="/cases/:slug" element={<CaseStudy />} />
+            <Route path="/confirma" element={<Confirma />} />
           </Route>
 
           <Route
