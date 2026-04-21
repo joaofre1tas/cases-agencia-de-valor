@@ -17,9 +17,12 @@ export function extractYoutubeId(input: string): string | null {
       return /^[a-zA-Z0-9_-]{11}$/.test(last) ? last : null
     }
   } catch {
-    return null
+    // no-op: segue para fallback regex abaixo
   }
-  return null
+  const regexFallback = raw.match(/(?:v=|\/embed\/|\/shorts\/|\/live\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+  if (regexFallback?.[1]) return regexFallback[1]
+  const anyId = raw.match(/\b[a-zA-Z0-9_-]{11}\b/)
+  return anyId?.[0] ?? null
 }
 
 export function youtubeEmbedUrl(input: string): string | null {

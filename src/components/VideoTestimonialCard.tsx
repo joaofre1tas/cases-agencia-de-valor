@@ -1,10 +1,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
-import { youtubeEmbedUrl } from '@/lib/youtube'
+import { youtubeEmbedUrl, youtubeThumbUrl } from '@/lib/youtube'
 import type { TestimonialVideoWithMetrics } from '@/lib/testimonial-videos'
 
 export function VideoTestimonialCard({ item }: { item: TestimonialVideoWithMetrics }) {
   const embedUrl = youtubeEmbedUrl(item.youtube_video_id)
+  const thumbnailUrl = youtubeThumbUrl(item.youtube_video_id)
 
   return (
     <Card className="flex flex-col h-full card-av hover-glow-av overflow-hidden">
@@ -18,6 +19,14 @@ export function VideoTestimonialCard({ item }: { item: TestimonialVideoWithMetri
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
+          />
+        ) : thumbnailUrl ? (
+          <img
+            src={thumbnailUrl}
+            alt={`Thumbnail do depoimento — ${item.agency_name}`}
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-sm text-av-text-muted">
@@ -38,7 +47,7 @@ export function VideoTestimonialCard({ item }: { item: TestimonialVideoWithMetri
             <h3 className="text-[18px] md:text-[20px] font-semibold text-av-text leading-[1.3]">
               {item.headline}
             </h3>
-            <p className="text-xs uppercase tracking-wider text-av-text-muted mt-1">{item.segment}</p>
+            <p className="text-sm text-av-text-secondary mt-1">{item.founder_name}</p>
           </div>
         </div>
 
@@ -52,7 +61,7 @@ export function VideoTestimonialCard({ item }: { item: TestimonialVideoWithMetri
           <div className="text-sm text-av-text-secondary">
             <span className="font-semibold text-av-text">{item.agency_name}</span>
             <span className="mx-2 text-av-border">•</span>
-            <span>{item.founder_name}</span>
+            <span className="uppercase tracking-wider">{item.segment}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mt-5 pt-5 border-t border-av-border">

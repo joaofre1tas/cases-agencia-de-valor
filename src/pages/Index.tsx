@@ -37,6 +37,7 @@ export default function Index() {
   const [searchQuery, setSearchQuery] = useState('')
   const [segmentFilter, setSegmentFilter] = useState('Todos')
   const [videoSegmentFilter, setVideoSegmentFilter] = useState('Todos')
+  const [videoSearchQuery, setVideoSearchQuery] = useState('')
   const casesQuery = useQuery({
     queryKey: ['public', 'cases'],
     queryFn: () => listCases(false),
@@ -78,9 +79,24 @@ export default function Index() {
 
   const filteredVideos = useMemo(() => {
     const videos = testimonialVideosQuery.data ?? []
-    if (videoSegmentFilter === 'Todos') return videos
-    return videos.filter((item) => item.segment === videoSegmentFilter)
-  }, [testimonialVideosQuery.data, videoSegmentFilter])
+    const normalizedSearch = videoSearchQuery.toLowerCase().trim()
+    return videos.filter((item) => {
+      const matchesSegment = videoSegmentFilter === 'Todos' || item.segment === videoSegmentFilter
+      if (!normalizedSearch) return matchesSegment
+      const metricsText = item.metrics.map((m) => `${m.label} ${m.value}`).join(' ')
+      const searchable = [
+        item.headline,
+        item.description ?? '',
+        item.agency_name,
+        item.founder_name,
+        item.segment,
+        metricsText,
+      ]
+        .join(' ')
+        .toLowerCase()
+      return matchesSegment && searchable.includes(normalizedSearch)
+    })
+  }, [testimonialVideosQuery.data, videoSearchQuery, videoSegmentFilter])
 
   useEffect(() => {
     const current = searchParams.get('tab')
@@ -330,23 +346,45 @@ export default function Index() {
               ) : testimonialVideosQuery.data && testimonialVideosQuery.data.length > 0 ? (
                 <div className="space-y-6">
                   <div className="card-av p-4 md:p-6">
-                    <div className="w-full md:w-64 shrink-0">
-                      <Select value={videoSegmentFilter} onValueChange={setVideoSegmentFilter}>
-                        <SelectTrigger className="h-12 bg-av-bg border-av-border text-av-text focus:ring-av-orange rounded-md">
-                          <div className="flex items-center gap-2">
-                            <Layers className="h-4 w-4 text-av-text-muted" />
-                            <SelectValue placeholder="Segmento" />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Todos">Todos os segmentos</SelectItem>
-                          {(segmentsQuery.data ?? []).map((segment) => (
-                            <SelectItem key={segment.id} value={segment.name}>
-                              {segment.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="flex flex-col md:flex-row gap-4 mb-4">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-av-text-muted" />
+                        <Input
+                          placeholder="Buscar vídeo por headline, agência, fundador, nicho ou métrica..."
+                          className="pl-10 h-12 text-base bg-av-bg border-av-border text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange focus-visible:border-av-orange/50 rounded-md"
+                          value={videoSearchQuery}
+                          onChange={(e) => setVideoSearchQuery(e.target.value)}
+                        />
+                      </div>
+                      <div className="w-full md:w-64 shrink-0">
+                        <Select value={videoSegmentFilter} onValueChange={setVideoSegmentFilter}>
+                          <SelectTrigger className="h-12 bg-av-bg border-av-border text-av-text focus:ring-av-orange rounded-md">
+                            <div className="flex items-center gap-2">
+                              <Layers className="h-4 w-4 text-av-text-muted" />
+                              <SelectValue placeholder="Segmento" />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Todos">Todos os segmentos</SelectItem>
+                            {(segmentsQuery.data ?? []).map((segment) => (
+                              <SelectItem key={segment.id} value={segment.name}>
+                                {segment.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-av-border">
+                      <p className="text-sm text-av-text-muted">
+                        Mostrando{' '}
+                        <span className="font-semibold text-av-text">{filteredVideos.length}</span> de{' '}
+                        <span className="font-semibold text-av-text">
+                          {testimonialVideosQuery.data.length}
+                        </span>{' '}
+                        vídeos
+                      </p>
                     </div>
                   </div>
 
