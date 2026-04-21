@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CaseCard } from '@/components/CaseCard'
+import { BellPrintsGallery } from '@/components/BellPrintsGallery'
+import { VideoTestimonialCard } from '@/components/VideoTestimonialCard'
 import { Search, Layers } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   Select,
   SelectContent,
@@ -11,8 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { listCases } from '@/lib/cases'
+import { listBellPrints } from '@/lib/bells'
 import { listSegments } from '@/lib/segments'
+import { listTestimonialVideos } from '@/lib/testimonial-videos'
 import { flatRecordToFormValues, mergeSiteSettingsRows, useSiteSettings } from '@/lib/site-settings'
 import { sanitizeRichHtml } from '@/lib/markdown'
 import {
@@ -25,6 +30,11 @@ import { cn } from '@/lib/utils'
 
 export default function Index() {
   const gridRef = useRef<HTMLDivElement>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialTab = searchParams.get('tab')
+  const [activeTab, setActiveTab] = useState<'estudos' | 'sinos' | 'videos'>(
+    initialTab === 'sinos' || initialTab === 'videos' ? initialTab : 'estudos',
+  )
   const [searchQuery, setSearchQuery] = useState('')
   const [segmentFilter, setSegmentFilter] = useState('Todos')
   const casesQuery = useQuery({
@@ -34,6 +44,14 @@ export default function Index() {
   const segmentsQuery = useQuery({
     queryKey: ['segments'],
     queryFn: listSegments,
+  })
+  const bellPrintsQuery = useQuery({
+    queryKey: ['public', 'bell-prints'],
+    queryFn: () => listBellPrints(false),
+  })
+  const testimonialVideosQuery = useQuery({
+    queryKey: ['public', 'testimonial-videos'],
+    queryFn: () => listTestimonialVideos(false),
   })
   const siteSettingsQuery = useSiteSettings()
   const cases = useMemo(() => casesQuery.data ?? [], [casesQuery.data])
@@ -80,6 +98,14 @@ export default function Index() {
 
     return () => observer.disconnect()
   }, [filteredCases])
+
+  useEffect(() => {
+    const current = searchParams.get('tab')
+    if (current === activeTab) return
+    const next = new URLSearchParams(searchParams)
+    next.set('tab', activeTab)
+    setSearchParams(next, { replace: true })
+  }, [activeTab, searchParams, setSearchParams])
 
   const clientPhotos = [
     '/home/clientes/cliente-01.webp',
@@ -213,72 +239,120 @@ export default function Index() {
             />
           </div>
 
-          {/* Busca e filtro */}
-          <div className="card-av p-4 md:p-6 mb-12 animate-fade-in-up">
-            <div className="flex flex-col md:flex-row gap-4 mb-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-av-text-muted" />
-                <Input
-                  placeholder="Buscar caso por nome, nicho ou resultado..."
-                  className="pl-10 h-12 text-base bg-av-bg border-av-border text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange focus-visible:border-av-orange/50 rounded-md"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <div className="w-full md:w-64 shrink-0">
-                <Select value={segmentFilter} onValueChange={setSegmentFilter}>
-                  <SelectTrigger className="h-12 bg-av-bg border-av-border text-av-text focus:ring-av-orange rounded-md">
-                    <div className="flex items-center gap-2">
-                      <Layers className="h-4 w-4 text-av-text-muted" />
-                      <SelectValue placeholder="Segmento" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Todos">Todos os segmentos</SelectItem>
-                    {(segmentsQuery.data ?? []).map((segment) => (
-                      <SelectItem key={segment.id} value={segment.name}>
-                        {segment.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-av-border">
-              <p className="text-sm text-av-text-muted">
-                Mostrando{' '}
-                <span className="font-semibold text-av-text">{filteredCases.length}</span> de{' '}
-                <span className="font-semibold text-av-text">{cases.length}</span> cases
-              </p>
-            </div>
-          </div>
-
-          {casesQuery.isLoading ? (
-            <div className="card-av p-8 text-center text-av-text-muted">Carregando cases...</div>
-          ) : null}
-
-          <div
-            ref={gridRef}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
-          >
-            {filteredCases.map((caseItem) => (
-              <Link
-                to={`/cases/${caseItem.slug}`}
-                key={caseItem.id}
-                className="opacity-0 translate-y-4 transition-all duration-500 ease-out block hover:no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-av-orange rounded-xl"
-                style={{ willChange: 'opacity, transform' }}
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+            <TabsList className="h-auto w-full md:w-auto rounded-md bg-av-surface border border-av-border p-1 mb-8 grid grid-cols-3 md:inline-flex">
+              <TabsTrigger
+                value="estudos"
+                className="rounded-sm data-[state=active]:bg-av-bg data-[state=active]:text-av-text data-[state=active]:shadow-none text-av-text-secondary"
               >
-                <CaseCard caseItem={caseItem} />
-              </Link>
-            ))}
-          </div>
+                Estudos de Caso
+              </TabsTrigger>
+              <TabsTrigger
+                value="sinos"
+                className="rounded-sm data-[state=active]:bg-av-bg data-[state=active]:text-av-text data-[state=active]:shadow-none text-av-text-secondary"
+              >
+                Sinos
+              </TabsTrigger>
+              <TabsTrigger
+                value="videos"
+                className="rounded-sm data-[state=active]:bg-av-bg data-[state=active]:text-av-text data-[state=active]:shadow-none text-av-text-secondary"
+              >
+                Vídeos
+              </TabsTrigger>
+            </TabsList>
 
-          {filteredCases.length === 0 && (
-            <div className="text-center py-20 text-av-text-muted">
-              <p className="text-lg">Nenhum case encontrado para os filtros selecionados.</p>
-            </div>
-          )}
+            <TabsContent value="estudos" className="mt-0">
+              <div className="card-av p-4 md:p-6 mb-12 animate-fade-in-up">
+                <div className="flex flex-col md:flex-row gap-4 mb-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-av-text-muted" />
+                    <Input
+                      placeholder="Buscar caso por nome, nicho ou resultado..."
+                      className="pl-10 h-12 text-base bg-av-bg border-av-border text-av-text placeholder:text-av-text-muted focus-visible:ring-av-orange focus-visible:border-av-orange/50 rounded-md"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <div className="w-full md:w-64 shrink-0">
+                    <Select value={segmentFilter} onValueChange={setSegmentFilter}>
+                      <SelectTrigger className="h-12 bg-av-bg border-av-border text-av-text focus:ring-av-orange rounded-md">
+                        <div className="flex items-center gap-2">
+                          <Layers className="h-4 w-4 text-av-text-muted" />
+                          <SelectValue placeholder="Segmento" />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Todos">Todos os segmentos</SelectItem>
+                        {(segmentsQuery.data ?? []).map((segment) => (
+                          <SelectItem key={segment.id} value={segment.name}>
+                            {segment.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-av-border">
+                  <p className="text-sm text-av-text-muted">
+                    Mostrando{' '}
+                    <span className="font-semibold text-av-text">{filteredCases.length}</span> de{' '}
+                    <span className="font-semibold text-av-text">{cases.length}</span> cases
+                  </p>
+                </div>
+              </div>
+
+              {casesQuery.isLoading ? (
+                <div className="card-av p-8 text-center text-av-text-muted">Carregando cases...</div>
+              ) : null}
+
+              <div
+                ref={gridRef}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+              >
+                {filteredCases.map((caseItem) => (
+                  <Link
+                    to={`/cases/${caseItem.slug}`}
+                    key={caseItem.id}
+                    className="opacity-0 translate-y-4 transition-all duration-500 ease-out block hover:no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-av-orange rounded-xl"
+                    style={{ willChange: 'opacity, transform' }}
+                  >
+                    <CaseCard caseItem={caseItem} />
+                  </Link>
+                ))}
+              </div>
+
+              {filteredCases.length === 0 && (
+                <div className="text-center py-20 text-av-text-muted">
+                  <p className="text-lg">Nenhum case encontrado para os filtros selecionados.</p>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="sinos" className="mt-0">
+              {bellPrintsQuery.isLoading ? (
+                <div className="card-av p-8 text-center text-av-text-muted">Carregando sinos...</div>
+              ) : (
+                <BellPrintsGallery prints={bellPrintsQuery.data ?? []} />
+              )}
+            </TabsContent>
+
+            <TabsContent value="videos" className="mt-0">
+              {testimonialVideosQuery.isLoading ? (
+                <div className="card-av p-8 text-center text-av-text-muted">Carregando vídeos...</div>
+              ) : testimonialVideosQuery.data && testimonialVideosQuery.data.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                  {testimonialVideosQuery.data.map((item) => (
+                    <VideoTestimonialCard key={item.id} item={item} />
+                  ))}
+                </div>
+              ) : (
+                <div className="card-av p-8 text-center text-av-text-muted">
+                  Ainda não temos vídeos publicados.
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
     </div>

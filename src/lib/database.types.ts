@@ -81,6 +81,36 @@ export interface Database {
         }
         Relationships: []
       }
+      mentor_bell_prints: {
+        Row: {
+          id: string
+          image_url: string
+          alt_text: string | null
+          published: boolean
+          sort_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          image_url: string
+          alt_text?: string | null
+          published?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          image_url?: string
+          alt_text?: string | null
+          published?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cases: {
         Row: {
           id: string
@@ -190,6 +220,54 @@ export interface Database {
           final_cta_label?: string | null
           final_cta_url?: string | null
           metrics?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      testimonial_videos: {
+        Row: {
+          id: string
+          youtube_video_id: string
+          headline: string
+          description: string | null
+          agency_name: string
+          founder_name: string
+          founder_avatar_url: string | null
+          segment: string
+          metrics: Json
+          published: boolean
+          sort_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          youtube_video_id: string
+          headline: string
+          description?: string | null
+          agency_name: string
+          founder_name: string
+          founder_avatar_url?: string | null
+          segment: string
+          metrics?: Json
+          published?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          youtube_video_id?: string
+          headline?: string
+          description?: string | null
+          agency_name?: string
+          founder_name?: string
+          founder_avatar_url?: string | null
+          segment?: string
+          metrics?: Json
+          published?: boolean
+          sort_order?: number
           created_at?: string
           updated_at?: string
         }
