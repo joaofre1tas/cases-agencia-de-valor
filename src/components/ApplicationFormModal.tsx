@@ -95,8 +95,6 @@ export function ApplicationFormModal() {
   const [step, setStep] = useState<Step>(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const webhookUrl = import.meta.env.VITE_MAKE_APPLICATION_WEBHOOK_URL as string | undefined
-
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(applicationSchema),
     defaultValues: INITIAL_VALUES,
@@ -127,15 +125,6 @@ export function ApplicationFormModal() {
   }
 
   const handleSubmit = form.handleSubmit(async (values) => {
-    if (!webhookUrl) {
-      toast({
-        title: 'Webhook não configurado',
-        description: 'Defina VITE_MAKE_APPLICATION_WEBHOOK_URL para enviar as aplicações.',
-        variant: 'destructive',
-      })
-      return
-    }
-
     setIsSubmitting(true)
     try {
       const params = new URLSearchParams(window.location.search)
@@ -151,7 +140,7 @@ export function ApplicationFormModal() {
         },
       }
 
-      const response = await fetch(webhookUrl, {
+      const response = await fetch('/api/submit-application', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -160,7 +149,19 @@ export function ApplicationFormModal() {
       })
 
       if (!response.ok) {
-        throw new Error('Falha ao enviar aplicação')
+        let description = 'Tente novamente em instantes.'
+        try {
+          const data = (await response.json()) as { error?: string }
+          if (data.error) description = data.error
+        } catch {
+          /* ignore */
+        }
+        toast({
+          title: 'Não foi possível enviar',
+          description,
+          variant: 'destructive',
+        })
+        return
       }
 
       closeApplicationModal()
