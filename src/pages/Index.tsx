@@ -73,6 +73,10 @@ export default function Index() {
   }, [cases, searchQuery, segmentFilter])
 
   useEffect(() => {
+    if (activeTab !== 'estudos') {
+      return
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -97,7 +101,7 @@ export default function Index() {
     }
 
     return () => observer.disconnect()
-  }, [filteredCases])
+  }, [filteredCases, activeTab])
 
   useEffect(() => {
     const current = searchParams.get('tab')
