@@ -28,6 +28,15 @@ export async function createBellPrint(payload: BellPrintInsert) {
   return data as BellPrintRow
 }
 
+export async function createBellPrints(payloads: BellPrintInsert[]) {
+  if (payloads.length === 0) {
+    return [] as BellPrintRow[]
+  }
+  const { data, error } = await supabase.from('mentor_bell_prints').insert(payloads).select('*')
+  if (error) throw error
+  return (data ?? []) as BellPrintRow[]
+}
+
 export async function updateBellPrint(id: string, payload: BellPrintUpdate) {
   const { data, error } = await supabase
     .from('mentor_bell_prints')
