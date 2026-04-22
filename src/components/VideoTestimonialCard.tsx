@@ -13,7 +13,10 @@ export function VideoTestimonialCard({ item }: { item: TestimonialVideoWithMetri
 
   return (
     <Card className="flex flex-col h-full card-av hover-glow-av overflow-hidden">
-      <div className="relative aspect-video border-b border-av-border bg-av-bg overflow-hidden">
+      <div
+        className="relative w-full border-b border-av-border bg-av-bg overflow-hidden"
+        style={{ aspectRatio: '16 / 9' }}
+      >
         {showIframe ? (
           <iframe
             className="absolute inset-0 h-full w-full"
