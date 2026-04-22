@@ -10,18 +10,18 @@ export function BellPrintsGallery({ prints }: { prints: BellPrintRow[] }) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+    <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 lg:gap-6 [column-fill:_balance]">
       {prints.map((item) => (
         <figure
           key={item.id}
-          className="card-av overflow-hidden border border-av-border bg-av-surface shadow-elevation"
+          className="mb-5 lg:mb-6 break-inside-avoid card-av overflow-hidden border border-av-border bg-av-surface shadow-elevation"
         >
           <img
             src={item.image_url}
             alt={item.alt_text || 'Print de comemoração de contrato no grupo de mentorados'}
             loading="lazy"
             decoding="async"
-            className="w-full h-auto object-cover"
+            className="w-full h-auto object-contain"
           />
         </figure>
       ))}
