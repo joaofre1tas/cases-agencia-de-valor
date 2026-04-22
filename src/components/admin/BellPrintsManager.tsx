@@ -33,6 +33,22 @@ async function normalizeImageFile(file: File) {
   })
 }
 
+function extractErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const message = (error as { message?: unknown }).message
+    if (typeof message === 'string' && message.trim()) {
+      return message
+    }
+  }
+  if (typeof error === 'string' && error.trim()) {
+    return error
+  }
+  return 'Falha no upload em lote.'
+}
+
 export default function BellPrintsManager() {
   const queryClient = useQueryClient()
   const [batchUploading, setBatchUploading] = useState(false)
@@ -86,20 +102,30 @@ export default function BellPrintsManager() {
         sort_order: number
         published: boolean
       }> = []
+      const failedFiles: string[] = []
 
       for (let index = 0; index < files.length; index += 1) {
         const originalFile = files[index]
-        const file = await normalizeImageFile(originalFile)
-        const url = await uploadAsset(file, 'bells')
-        const baseName = originalFile.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ').trim()
-        uploadedPayloads.push({
-          image_url: url,
-          alt_text: baseName || null,
-          sort_order: nextSortOrder,
-          published: true,
-        })
-        nextSortOrder += 1
+        try {
+          const file = await normalizeImageFile(originalFile)
+          const url = await uploadAsset(file, 'bells')
+          const baseName = originalFile.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ').trim()
+          uploadedPayloads.push({
+            image_url: url,
+            alt_text: baseName || null,
+            sort_order: nextSortOrder,
+            published: true,
+          })
+          nextSortOrder += 1
+        } catch (error) {
+          failedFiles.push(originalFile.name)
+          console.error('Falha ao processar arquivo no lote:', originalFile.name, error)
+        }
         setBatchProgress({ done: index + 1, total: files.length })
+      }
+
+      if (uploadedPayloads.length === 0) {
+        throw new Error('Nenhum arquivo do lote pôde ser enviado.')
       }
 
       const chunkSize = 100
@@ -110,9 +136,15 @@ export default function BellPrintsManager() {
 
       await queryClient.invalidateQueries({ queryKey: ['admin', 'bell-prints'] })
       await queryClient.invalidateQueries({ queryKey: ['public', 'bell-prints'] })
-      toast.success(`${files.length} sinos enviados em lote.`)
+      if (failedFiles.length > 0) {
+        toast.warning(
+          `${uploadedPayloads.length} sinos enviados. ${failedFiles.length} falharam (${failedFiles[0]}${failedFiles.length > 1 ? ', ...' : ''}).`,
+        )
+      } else {
+        toast.success(`${uploadedPayloads.length} sinos enviados em lote.`)
+      }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Falha no upload em lote.'
+      const message = extractErrorMessage(error)
       toast.error(message)
     } finally {
       setBatchUploading(false)
