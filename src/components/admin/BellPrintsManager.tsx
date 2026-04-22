@@ -1,11 +1,37 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import heic2any from 'heic2any'
 import { Trash2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { createBellPrints, listBellPrints, removeBellPrint, updateBellPrint } from '@/lib/bells'
 import { uploadAsset } from '@/lib/cases'
+
+function hasImageExtension(fileName: string) {
+  return /\.(avif|bmp|gif|heic|heif|jpe?g|png|webp)$/i.test(fileName)
+}
+
+function isHeicLike(file: File) {
+  return /\.(heic|heif)$/i.test(file.name) || /image\/hei(c|f)/i.test(file.type)
+}
+
+async function normalizeImageFile(file: File) {
+  if (!isHeicLike(file)) {
+    return file
+  }
+  const converted = await heic2any({
+    blob: file,
+    toType: 'image/jpeg',
+    quality: 0.9,
+  })
+  const outputBlob = Array.isArray(converted) ? converted[0] : converted
+  const safeName = file.name.replace(/\.[^/.]+$/, '').trim() || `heic-${Date.now()}`
+  return new File([outputBlob], `${safeName}.jpg`, {
+    type: 'image/jpeg',
+    lastModified: Date.now(),
+  })
+}
 
 export default function BellPrintsManager() {
   const queryClient = useQueryClient()
@@ -38,7 +64,9 @@ export default function BellPrintsManager() {
   })
 
   async function handleBatchUpload(filesList: FileList | File[]) {
-    const files = Array.from(filesList).filter((file) => file.type.startsWith('image/'))
+    const files = Array.from(filesList).filter(
+      (file) => file.type.startsWith('image/') || hasImageExtension(file.name),
+    )
     if (files.length === 0) {
       toast.error('Selecione imagens válidas para upload em lote.')
       return
@@ -60,9 +88,10 @@ export default function BellPrintsManager() {
       }> = []
 
       for (let index = 0; index < files.length; index += 1) {
-        const file = files[index]
+        const originalFile = files[index]
+        const file = await normalizeImageFile(originalFile)
         const url = await uploadAsset(file, 'bells')
-        const baseName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ').trim()
+        const baseName = originalFile.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ').trim()
         uploadedPayloads.push({
           image_url: url,
           alt_text: baseName || null,
@@ -129,7 +158,7 @@ export default function BellPrintsManager() {
             {batchUploading ? 'Enviando lote...' : 'Adicionar sinos'}
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,.heic,.heif"
               multiple
               className="absolute inset-0 opacity-0 cursor-pointer"
               onChange={(event) => {
