@@ -47,7 +47,7 @@ export default function MetricsField({ value, onChange }: MetricsFieldProps) {
         <p className="text-sm text-av-text-muted">Nenhuma métrica adicionada.</p>
       ) : null}
       {metrics.map((metric, index) => (
-        <div key={`${index}-${metric.label}`} className="grid grid-cols-12 gap-2 items-center">
+        <div key={index} className="grid grid-cols-12 gap-2 items-center">
           <Input
             value={metric.value}
             onChange={(event) => updateAt(index, { value: event.target.value })}
